@@ -1,0 +1,9 @@
+package com.studenttracker.backend.dto.response;
+
+public class AuthResponse {
+    public String token;
+
+    public AuthResponse(String token) {
+        this.token = token;
+    }
+}
