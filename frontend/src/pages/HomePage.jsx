@@ -4,26 +4,12 @@ import { getAllSubjects } from "../services/subjectService";
 import { getAllTasks } from "../services/taskService";
 import { getSubtasksByDate, toggleSubtaskDone, updateSubtaskPlan, createSubtask } from "../services/subtaskService";
 import { getTaskBreakdown, getRiskAssessment } from "../services/aiService";
+import { toISODate, parseDateLocal } from "../utils/dateUtils";
 import {
   Calendar, Clock, CheckSquare, Square, CalendarX,
   X, ChevronDown, Check, AlertTriangle, BookOpen, ArrowRight, ExternalLink,
   Play, Pause, RotateCcw, Sparkles, Plus,
 } from "lucide-react";
-
-// ── date helpers ──────────────────────────────────────────────────────────────
-const toISODate = (date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
-
-const parseDateLocal = (raw) => {
-  if (!raw) return null;
-  if (Array.isArray(raw)) return new Date(raw[0], raw[1] - 1, raw[2]);
-  const [y, m, d] = String(raw).split("-").map(Number);
-  return new Date(y, m - 1, d);
-};
 
 const QUOTES = [
   "Small steps every day lead to big results.",

@@ -7,13 +7,7 @@ import Modal from "../components/common/Modal";
 import Button from "../components/ui/Button";
 import { Plus, BookOpen, Award, AlertTriangle, ChevronDown, X, Sparkles } from "lucide-react";
 import { getRiskAssessment } from "../services/aiService";
-
-const parseDateLocal = (raw) => {
-  if (!raw) return null;
-  if (Array.isArray(raw)) return new Date(raw[0], raw[1] - 1, raw[2]);
-  const [y, m, d] = String(raw).split("-").map(Number);
-  return new Date(y, m - 1, d);
-};
+import { parseDateLocal } from "../utils/dateUtils";
 
 function FinalizeModal({ subject, onClose, onSave }) {
   const autoGrade = (() => {
