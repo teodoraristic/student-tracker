@@ -183,6 +183,7 @@ const styles = {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
+        flex: 1,
         background: "var(--surface-3)",
         padding: "24px",
     },
