@@ -54,7 +54,7 @@ function formatWeekRange(monday) {
 }
 
 function subjectColor(subjectId) {
-  if (!subjectId) return { bg: "#f3f4f6", text: "#6b7280" };
+  if (!subjectId) return { bg: "var(--surface-3)", text: "var(--ink-3)" };
   const hue = SUBJECT_HUES[subjectId % SUBJECT_HUES.length];
   return {
     bg: `hsl(${hue}, 70%, 94%)`,
@@ -109,17 +109,21 @@ function useWeeklyPlanner() {
 }
 
 // ─── SubtaskCard ──────────────────────────────────────────────────────────────
-function SubtaskCard({ subtask, onToggle, onDelete, onUnplan, isBacklog, onAssign, weekDays }) {
+function SubtaskCard({ subtask, onToggle, onDelete, onUnplan, isBacklog, onAssign, weekDays, onDragStart, isDragging }) {
   const [hovered, setHovered] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const color = subjectColor(subtask.subjectId);
 
   return (
     <div
+      draggable
+      onDragStart={e => { e.dataTransfer.effectAllowed = "move"; onDragStart(); }}
       style={{
         ...c.card,
         ...(subtask.done ? c.cardDone : {}),
         ...(hovered ? c.cardHover : {}),
+        ...(isDragging ? c.cardDragging : {}),
+        cursor: "grab",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setAssigning(false); }}
@@ -145,52 +149,15 @@ function SubtaskCard({ subtask, onToggle, onDelete, onUnplan, isBacklog, onAssig
         )}
       </div>
 
-      {/* Actions on hover */}
-      {hovered && (
+      {/* Actions on hover — only shown for planned (non-backlog) subtasks */}
+      {hovered && !isBacklog && (
         <div style={c.actions}>
-          {isBacklog ? (
-            assigning ? (
-              <div style={c.dayPicker}>
-                {weekDays.map(day => (
-                  <button
-                    key={toDateStr(day)}
-                    onClick={() => { onAssign(subtask.id, toDateStr(day)); setAssigning(false); }}
-                    style={c.dayPickerBtn}
-                    title={toDateStr(day)}
-                  >
-                    {DAY_NAMES[(day.getDay() + 6) % 7].slice(0, 1)}
-                    <span style={c.dayPickerNum}>{day.getDate()}</span>
-                  </button>
-                ))}
-                <button onClick={() => setAssigning(false)} style={c.dayPickerCancel}>
-                  <X size={12} />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setAssigning(true)}
-                style={c.assignBtn}
-                title="Assign to a day this week"
-              >
-                <Plus size={12} />
-                Plan
-              </button>
-            )
-          ) : (
-            <button
-              onClick={() => onUnplan(subtask.id)}
-              style={c.unplanBtn}
-              title="Remove from plan"
-            >
-              <X size={12} />
-            </button>
-          )}
           <button
-            onClick={() => onDelete(subtask.id)}
-            style={c.deleteBtn}
-            title="Delete subtask"
+            onClick={() => onUnplan(subtask.id)}
+            style={c.unplanBtn}
+            title="Remove from plan"
           >
-            <Trash2 size={12} />
+            <X size={12} />
           </button>
         </div>
       )}
@@ -199,7 +166,7 @@ function SubtaskCard({ subtask, onToggle, onDelete, onUnplan, isBacklog, onAssig
 }
 
 // ─── DayColumn ────────────────────────────────────────────────────────────────
-function DayColumn({ day, subtasks, filterSubjectId, onAdd, onToggle, onDelete, onUnplan }) {
+function DayColumn({ day, subtasks, filterSubjectId, onAdd, onToggle, onDelete, onUnplan, onDragStart, onDrop, isDragOver, draggingId }) {
   const dateStr = toDateStr(day);
   const isToday = dateStr === getTodayStr();
   const dayIdx = (day.getDay() + 6) % 7;
@@ -212,7 +179,16 @@ function DayColumn({ day, subtasks, filterSubjectId, onAdd, onToggle, onDelete, 
   const doneCount = filtered.filter(st => st.done).length;
 
   return (
-    <div style={{ ...col.column, ...(isToday ? col.columnToday : {}) }}>
+    <div
+      style={{
+        ...col.column,
+        ...(isToday ? col.columnToday : {}),
+        ...(isDragOver ? col.columnDragOver : {}),
+      }}
+      onDragOver={e => { e.preventDefault(); onDrop.onDragOver(); }}
+      onDragLeave={onDrop.onDragLeave}
+      onDrop={e => { e.preventDefault(); onDrop.onDrop(); }}
+    >
       <div style={col.header}>
         <div style={col.dayName}>{DAY_NAMES[dayIdx]}</div>
         <div style={{ ...col.dayNum, ...(isToday ? col.dayNumToday : {}) }}>
@@ -234,6 +210,8 @@ function DayColumn({ day, subtasks, filterSubjectId, onAdd, onToggle, onDelete, 
               onToggle={onToggle}
               onDelete={onDelete}
               onUnplan={onUnplan}
+              onDragStart={() => onDragStart(st.id, "day", dateStr)}
+              isDragging={draggingId === st.id}
             />
           ))
         )}
@@ -248,16 +226,21 @@ function DayColumn({ day, subtasks, filterSubjectId, onAdd, onToggle, onDelete, 
 }
 
 // ─── BacklogSection ───────────────────────────────────────────────────────────
-function BacklogSection({ backlog, filterSubjectId, weekDays, onToggle, onDelete, onAssign }) {
+function BacklogSection({ backlog, filterSubjectId, weekDays, onToggle, onDelete, onAssign, onDragStart, onDrop, isDragOver, draggingId }) {
   const filtered = useMemo(
     () => filterSubjectId ? backlog.filter(st => st.subjectId === filterSubjectId) : backlog,
     [backlog, filterSubjectId]
   );
 
-  if (filtered.length === 0) return null;
+  if (filtered.length === 0 && !isDragOver) return null;
 
   return (
-    <div style={bl.section}>
+    <div
+      style={{ ...bl.section, ...(isDragOver ? bl.sectionDragOver : {}) }}
+      onDragOver={e => { e.preventDefault(); onDrop.onDragOver(); }}
+      onDragLeave={onDrop.onDragLeave}
+      onDrop={e => { e.preventDefault(); onDrop.onDrop(); }}
+    >
       <div style={bl.header}>
         <span style={bl.title}>Backlog</span>
         <span style={bl.count}>{filtered.length} unplanned</span>
@@ -273,6 +256,8 @@ function BacklogSection({ backlog, filterSubjectId, weekDays, onToggle, onDelete
             onAssign={onAssign}
             isBacklog
             weekDays={weekDays}
+            onDragStart={() => onDragStart(st.id, "backlog", null)}
+            isDragging={draggingId === st.id}
           />
         ))}
       </div>
@@ -403,6 +388,8 @@ export default function WeeklyPlannerPage() {
   const [filterSubjectId, setFilterSubjectId] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [addModal, setAddModal] = useState(null); // { date: "YYYY-MM-DD" } | null
+  const [dragInfo, setDragInfo] = useState(null);   // { id, sourceType, sourceDateStr }
+  const [dragOverTarget, setDragOverTarget] = useState(null); // { type, dateStr } | null
 
   useEffect(() => {
     getAllSubjects().then(setSubjects).catch(console.error);
@@ -410,6 +397,19 @@ export default function WeeklyPlannerPage() {
 
   const todayWeekStart = getMondayOf(new Date());
   const isCurrentWeek = toDateStr(weekStart) === toDateStr(todayWeekStart);
+
+  const activeSubjects = useMemo(
+    () => subjects.filter(s => s.status === "IN_PROGRESS" || !s.status),
+    [subjects]
+  );
+  const finalizedSubjectIds = useMemo(
+    () => new Set(subjects.filter(s => s.status === "PASSED" || s.status === "FAILED").map(s => s.id)),
+    [subjects]
+  );
+  const activeBacklog = useMemo(
+    () => backlog.filter(st => !finalizedSubjectIds.has(st.subjectId)),
+    [backlog, finalizedSubjectIds]
+  );
 
   // ── Handlers ──
   const handleToggle = useCallback(async (id, done) => {
@@ -486,6 +486,53 @@ export default function WeeklyPlannerPage() {
     }
   }, [setBacklog, setSubtasksByDay]);
 
+  const handleDragStart = useCallback((id, sourceType, sourceDateStr) => {
+    setDragInfo({ id, sourceType, sourceDateStr });
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDragInfo(null);
+    setDragOverTarget(null);
+  }, []);
+
+  const handleDrop = useCallback(async (targetType, targetDateStr) => {
+    if (!dragInfo) return;
+    const { id, sourceType, sourceDateStr } = dragInfo;
+    setDragInfo(null);
+    setDragOverTarget(null);
+
+    if (targetType === sourceType && targetDateStr === sourceDateStr) return;
+
+    if (targetType === "backlog") {
+      await handleUnplan(id);
+    } else if (sourceType === "backlog") {
+      await handleAssign(id, targetDateStr);
+    } else {
+      // day → different day
+      try {
+        await updateSubtaskPlan(id, targetDateStr);
+        setSubtasksByDay(prev => {
+          const st = prev[sourceDateStr]?.find(s => s.id === id);
+          if (!st) return prev;
+          const next = { ...prev };
+          next[sourceDateStr] = prev[sourceDateStr].filter(s => s.id !== id);
+          if (targetDateStr in next) {
+            next[targetDateStr] = [...prev[targetDateStr], { ...st, plannedForDate: targetDateStr }];
+          }
+          return next;
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [dragInfo, handleUnplan, handleAssign, setSubtasksByDay]);
+
+  const makeDayDropProps = useCallback((targetType, targetDateStr) => ({
+    onDragOver:  () => setDragOverTarget({ type: targetType, dateStr: targetDateStr }),
+    onDragLeave: () => setDragOverTarget(null),
+    onDrop:      () => handleDrop(targetType, targetDateStr),
+  }), [handleDrop]);
+
   const handleCreate = useCallback(async (data) => {
     try {
       await createSubtask(data);
@@ -504,7 +551,7 @@ export default function WeeklyPlannerPage() {
   }
 
   return (
-    <div style={s.page}>
+    <div style={s.page} onDragEnd={handleDragEnd}>
       {/* Header */}
       <div style={s.header}>
         <div style={s.headerLeft}>
@@ -518,7 +565,7 @@ export default function WeeklyPlannerPage() {
             style={s.filterSelect}
           >
             <option value="">All subjects</option>
-            {subjects.map(sub => (
+            {activeSubjects.map(sub => (
               <option key={sub.id} value={sub.id}>{sub.name}</option>
             ))}
           </select>
@@ -552,25 +599,33 @@ export default function WeeklyPlannerPage() {
             onToggle={handleToggle}
             onDelete={handleDelete}
             onUnplan={handleUnplan}
+            onDragStart={handleDragStart}
+            onDrop={makeDayDropProps("day", toDateStr(day))}
+            isDragOver={dragOverTarget?.type === "day" && dragOverTarget?.dateStr === toDateStr(day)}
+            draggingId={dragInfo?.id}
           />
         ))}
       </div>
 
       {/* Backlog */}
       <BacklogSection
-        backlog={backlog}
+        backlog={activeBacklog}
         filterSubjectId={filterSubjectId}
         weekDays={weekDays}
         onToggle={handleToggle}
         onDelete={handleDelete}
         onAssign={handleAssign}
+        onDragStart={handleDragStart}
+        onDrop={makeDayDropProps("backlog", null)}
+        isDragOver={dragOverTarget?.type === "backlog"}
+        draggingId={dragInfo?.id}
       />
 
       {/* Add Subtask Modal */}
       {addModal && (
         <AddSubtaskModal
           date={addModal.date}
-          subjects={subjects}
+          subjects={activeSubjects}
           onClose={() => setAddModal(null)}
           onCreate={handleCreate}
         />
@@ -584,8 +639,8 @@ const s = {
   page: {
     padding: "32px",
     minHeight: "100vh",
-    background: "#f9fafb",
-    fontFamily: "inherit",
+    background: "var(--surface-3)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
     boxSizing: "border-box",
   },
   loadingWrap: {
@@ -593,11 +648,12 @@ const s = {
     alignItems: "center",
     justifyContent: "center",
     minHeight: "100vh",
-    background: "#f9fafb",
+    background: "var(--surface-3)",
   },
   loadingText: {
-    color: "#737373",
+    color: "var(--ink-3)",
     fontSize: "15px",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   header: {
     display: "flex",
@@ -613,14 +669,16 @@ const s = {
     gap: "4px",
   },
   pageTitle: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "#171717",
+    fontSize: "32px",
+    fontWeight: "400",
+    color: "var(--ink)",
     margin: 0,
+    fontFamily: "'Instrument Serif', serif",
   },
   weekRange: {
     fontSize: "14px",
-    color: "#737373",
+    color: "var(--ink-3)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   headerRight: {
     display: "flex",
@@ -629,21 +687,22 @@ const s = {
   },
   filterSelect: {
     padding: "8px 12px",
-    borderRadius: "8px",
-    border: "1px solid #e5e5e5",
-    background: "#fff",
-    fontSize: "14px",
-    color: "#171717",
+    borderRadius: "var(--r-md)",
+    border: "1px solid var(--border)",
+    background: "var(--surface)",
+    fontSize: "13px",
+    color: "var(--ink)",
     cursor: "pointer",
     outline: "none",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   navGroup: {
     display: "flex",
     alignItems: "center",
     gap: "4px",
-    background: "#ffffff",
-    border: "1px solid #e5e5e5",
-    borderRadius: "10px",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-md)",
     padding: "4px",
   },
   navBtn: {
@@ -651,16 +710,17 @@ const s = {
     alignItems: "center",
     justifyContent: "center",
     padding: "6px 10px",
-    borderRadius: "7px",
+    borderRadius: "var(--r-sm)",
     border: "none",
     background: "transparent",
-    color: "#737373",
+    color: "var(--ink-3)",
     fontSize: "13px",
     fontWeight: "500",
     cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   navBtnActive: {
-    background: "#f43f5e",
+    background: "var(--rose-400)",
     color: "#ffffff",
   },
   grid: {
@@ -673,21 +733,25 @@ const s = {
 
 const col = {
   column: {
-    background: "#ffffff",
-    borderRadius: "12px",
-    border: "1px solid #e5e5e5",
+    background: "var(--surface)",
+    borderRadius: "var(--r-lg)",
+    border: "1px solid var(--border)",
     display: "flex",
     flexDirection: "column",
     minHeight: "320px",
     overflow: "hidden",
   },
   columnToday: {
-    border: "1.5px solid #f43f5e",
-    background: "#fffbfc",
+    border: "1.5px solid var(--rose-400)",
+    background: "var(--rose-50)",
+  },
+  columnDragOver: {
+    border: "2px dashed var(--rose-400)",
+    background: "var(--rose-50)",
   },
   header: {
     padding: "12px 12px 8px",
-    borderBottom: "1px solid #f3f4f6",
+    borderBottom: "1px solid var(--border)",
     display: "flex",
     alignItems: "baseline",
     gap: "5px",
@@ -695,24 +759,27 @@ const col = {
   dayName: {
     fontSize: "11px",
     fontWeight: "600",
-    color: "#9ca3af",
+    color: "var(--ink-3)",
     letterSpacing: "0.06em",
     textTransform: "uppercase",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   dayNum: {
     fontSize: "20px",
-    fontWeight: "700",
-    color: "#171717",
+    fontWeight: "400",
+    color: "var(--ink)",
     lineHeight: 1,
+    fontFamily: "'Instrument Serif', serif",
   },
   dayNumToday: {
-    color: "#f43f5e",
+    color: "var(--rose-400)",
   },
   progress: {
     marginLeft: "auto",
     fontSize: "11px",
-    color: "#9ca3af",
+    color: "var(--ink-3)",
     fontWeight: "500",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   list: {
     flex: 1,
@@ -724,10 +791,11 @@ const col = {
   },
   emptyMsg: {
     fontSize: "12px",
-    color: "#d1d5db",
+    color: "var(--ink-4)",
     textAlign: "center",
     marginTop: "24px",
     userSelect: "none",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   addBtn: {
     display: "flex",
@@ -736,13 +804,14 @@ const col = {
     gap: "4px",
     margin: "8px",
     padding: "7px",
-    borderRadius: "8px",
-    border: "1.5px dashed #e5e5e5",
+    borderRadius: "var(--r-md)",
+    border: "1.5px dashed var(--border)",
     background: "transparent",
-    color: "#9ca3af",
+    color: "var(--ink-3)",
     fontSize: "12px",
     fontWeight: "500",
     cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 };
 
@@ -752,25 +821,29 @@ const c = {
     alignItems: "flex-start",
     gap: "7px",
     padding: "7px 8px",
-    borderRadius: "7px",
-    border: "1px solid #f3f4f6",
-    background: "#fafafa",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--border)",
+    background: "var(--surface-2)",
     position: "relative",
     transition: "background 0.15s ease, border-color 0.15s ease",
   },
   cardDone: {
     opacity: 0.55,
   },
+  cardDragging: {
+    opacity: 0.4,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+  },
   cardHover: {
-    background: "#f3f4f6",
-    border: "1px solid #e5e5e5",
+    background: "var(--surface-3)",
+    border: "1px solid var(--border-2)",
   },
   checkbox: {
     width: "16px",
     height: "16px",
     minWidth: "16px",
     borderRadius: "50%",
-    border: "1.5px solid #d1d5db",
+    border: "1.5px solid var(--ink-4)",
     background: "transparent",
     cursor: "pointer",
     display: "flex",
@@ -782,8 +855,8 @@ const c = {
     flexShrink: 0,
   },
   checkboxDone: {
-    background: "#22c55e",
-    border: "1.5px solid #22c55e",
+    background: "var(--color-done)",
+    border: "1.5px solid var(--color-done)",
   },
   cardBody: {
     flex: 1,
@@ -795,13 +868,14 @@ const c = {
   cardTitle: {
     fontSize: "12px",
     fontWeight: "500",
-    color: "#171717",
+    color: "var(--ink)",
     lineHeight: 1.35,
     wordBreak: "break-word",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   cardTitleDone: {
     textDecoration: "line-through",
-    color: "#9ca3af",
+    color: "var(--ink-3)",
   },
   subjectBadge: {
     display: "inline-block",
@@ -812,6 +886,7 @@ const c = {
     letterSpacing: "0.03em",
     width: "fit-content",
     textTransform: "uppercase",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   actions: {
     display: "flex",
@@ -824,14 +899,15 @@ const c = {
     alignItems: "center",
     gap: "2px",
     padding: "3px 6px",
-    borderRadius: "5px",
-    border: "1px solid #e5e5e5",
-    background: "#fff",
-    color: "#374151",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--border)",
+    background: "var(--surface)",
+    color: "var(--ink-2)",
     fontSize: "11px",
     fontWeight: "500",
     cursor: "pointer",
     whiteSpace: "nowrap",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   unplanBtn: {
     display: "flex",
@@ -839,10 +915,10 @@ const c = {
     justifyContent: "center",
     width: "22px",
     height: "22px",
-    borderRadius: "5px",
-    border: "1px solid #fde8e8",
-    background: "#fff5f5",
-    color: "#ef4444",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--color-overdue-bg)",
+    background: "var(--color-overdue-bg)",
+    color: "var(--color-overdue)",
     cursor: "pointer",
     padding: 0,
   },
@@ -852,10 +928,10 @@ const c = {
     justifyContent: "center",
     width: "22px",
     height: "22px",
-    borderRadius: "5px",
-    border: "1px solid #fee2e2",
-    background: "#fff5f5",
-    color: "#dc2626",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--color-overdue-bg)",
+    background: "var(--color-overdue-bg)",
+    color: "var(--color-overdue)",
     cursor: "pointer",
     padding: 0,
   },
@@ -863,9 +939,9 @@ const c = {
     display: "flex",
     alignItems: "center",
     gap: "2px",
-    background: "#fff",
-    border: "1px solid #e5e5e5",
-    borderRadius: "6px",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-sm)",
     padding: "3px",
   },
   dayPickerBtn: {
@@ -873,20 +949,22 @@ const c = {
     flexDirection: "column",
     alignItems: "center",
     padding: "3px 5px",
-    borderRadius: "4px",
+    borderRadius: "var(--r-sm)",
     border: "none",
     background: "transparent",
-    color: "#6b7280",
+    color: "var(--ink-3)",
     fontSize: "9px",
     fontWeight: "600",
     cursor: "pointer",
     lineHeight: 1,
     gap: "1px",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   dayPickerNum: {
     fontSize: "10px",
     fontWeight: "700",
-    color: "#171717",
+    color: "var(--ink)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   dayPickerCancel: {
     display: "flex",
@@ -894,10 +972,10 @@ const c = {
     justifyContent: "center",
     width: "18px",
     height: "18px",
-    borderRadius: "4px",
+    borderRadius: "var(--r-sm)",
     border: "none",
     background: "transparent",
-    color: "#9ca3af",
+    color: "var(--ink-3)",
     cursor: "pointer",
     padding: 0,
   },
@@ -905,9 +983,9 @@ const c = {
 
 const bl = {
   section: {
-    background: "#ffffff",
-    borderRadius: "12px",
-    border: "1px solid #e5e5e5",
+    background: "var(--surface)",
+    borderRadius: "var(--r-lg)",
+    border: "1px solid var(--border)",
     padding: "16px 20px",
     marginBottom: "20px",
   },
@@ -919,21 +997,27 @@ const bl = {
   },
   title: {
     fontSize: "14px",
-    fontWeight: "700",
-    color: "#374151",
+    fontWeight: "600",
+    color: "var(--ink)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   count: {
     fontSize: "12px",
-    color: "#9ca3af",
-    background: "#f3f4f6",
+    color: "var(--ink-3)",
+    background: "var(--surface-3)",
     padding: "2px 8px",
     borderRadius: "99px",
     fontWeight: "500",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   list: {
     display: "flex",
     flexWrap: "wrap",
     gap: "8px",
+  },
+  sectionDragOver: {
+    border: "2px dashed var(--rose-400)",
+    background: "var(--rose-50)",
   },
 };
 
@@ -941,19 +1025,20 @@ const mo = {
   overlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(0,0,0,0.35)",
+    background: "rgba(26, 21, 35, 0.5)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1000,
   },
   modal: {
-    background: "#ffffff",
-    borderRadius: "14px",
+    background: "var(--surface)",
+    borderRadius: "var(--r-xl)",
     padding: "24px",
     width: "420px",
     maxWidth: "90vw",
     boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+    border: "1px solid var(--border)",
   },
   modalHeader: {
     display: "flex",
@@ -962,9 +1047,10 @@ const mo = {
     marginBottom: "4px",
   },
   modalTitle: {
-    fontSize: "17px",
-    fontWeight: "700",
-    color: "#171717",
+    fontSize: "22px",
+    fontWeight: "400",
+    color: "var(--ink)",
+    fontFamily: "'Instrument Serif', serif",
   },
   closeBtn: {
     display: "flex",
@@ -972,18 +1058,19 @@ const mo = {
     justifyContent: "center",
     width: "32px",
     height: "32px",
-    borderRadius: "8px",
-    border: "none",
-    background: "#f3f4f6",
-    color: "#6b7280",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--border)",
+    background: "var(--surface-2)",
+    color: "var(--ink-3)",
     cursor: "pointer",
     padding: 0,
   },
   dateLabel: {
     fontSize: "13px",
-    color: "#f43f5e",
+    color: "var(--rose-400)",
     fontWeight: "600",
     marginBottom: "16px",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   form: {
     display: "flex",
@@ -998,27 +1085,30 @@ const mo = {
   label: {
     fontSize: "12px",
     fontWeight: "600",
-    color: "#374151",
+    color: "var(--ink)",
     letterSpacing: "0.02em",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   select: {
     padding: "9px 12px",
-    borderRadius: "8px",
-    border: "1px solid #e5e5e5",
-    fontSize: "14px",
-    color: "#171717",
-    background: "#fafafa",
+    borderRadius: "var(--r-md)",
+    border: "1px solid var(--border)",
+    fontSize: "13px",
+    color: "var(--ink)",
+    background: "var(--surface)",
     outline: "none",
     cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   input: {
     padding: "9px 12px",
-    borderRadius: "8px",
-    border: "1px solid #e5e5e5",
-    fontSize: "14px",
-    color: "#171717",
-    background: "#fafafa",
+    borderRadius: "var(--r-md)",
+    border: "1px solid var(--border)",
+    fontSize: "13px",
+    color: "var(--ink)",
+    background: "var(--surface)",
     outline: "none",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   footer: {
     display: "flex",
@@ -1027,24 +1117,26 @@ const mo = {
     marginTop: "4px",
   },
   cancelBtn: {
-    padding: "9px 16px",
-    borderRadius: "8px",
-    border: "1px solid #e5e5e5",
-    background: "transparent",
-    color: "#737373",
-    fontSize: "14px",
+    padding: "8px 18px",
+    borderRadius: "var(--r-md)",
+    border: "1px solid var(--border)",
+    background: "var(--surface-3)",
+    color: "var(--ink)",
+    fontSize: "13px",
     fontWeight: "500",
     cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   submitBtn: {
-    padding: "9px 18px",
-    borderRadius: "8px",
+    padding: "8px 18px",
+    borderRadius: "var(--r-md)",
     border: "none",
-    background: "#f43f5e",
+    background: "var(--rose-400)",
     color: "#ffffff",
-    fontSize: "14px",
-    fontWeight: "600",
+    fontSize: "13px",
+    fontWeight: "500",
     cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   submitDisabled: {
     opacity: 0.45,

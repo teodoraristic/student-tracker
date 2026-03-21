@@ -13,6 +13,7 @@ import com.studenttracker.backend.model.Subject;
 import com.studenttracker.backend.model.Task;
 import com.studenttracker.backend.model.TaskStatus;
 import com.studenttracker.backend.model.User;
+import com.studenttracker.backend.repository.ExamPeriodRepository;
 import com.studenttracker.backend.repository.SubjectRepository;
 import com.studenttracker.backend.repository.TaskRepository;
 
@@ -22,13 +23,16 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final SubjectService subjectService;
     private final SubjectRepository subjectRepository;
+    private final ExamPeriodRepository examPeriodRepository;
 
     public TaskService(TaskRepository taskRepository,
                        SubjectService subjectService,
-                       SubjectRepository subjectRepository) {
+                       SubjectRepository subjectRepository,
+                       ExamPeriodRepository examPeriodRepository) {
         this.taskRepository = taskRepository;
         this.subjectService = subjectService;
         this.subjectRepository = subjectRepository;
+        this.examPeriodRepository = examPeriodRepository;
     }
 
     public TaskDTO create(CreateTaskRequest request, User user) {
@@ -41,11 +45,13 @@ public class TaskService {
         Task task = new Task();
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
-        task.setPriority(request.getPriority());
         task.setDueDate(request.getDueDate());
         task.setPoints(request.getPoints());
         task.setStatus(TaskStatus.TODO);
         task.setSubject(subject);
+        if (request.getExamPeriodId() != null) {
+            examPeriodRepository.findById(request.getExamPeriodId()).ifPresent(task::setExamPeriod);
+        }
 
         return TaskMapper.toDTO(taskRepository.save(task));
     }
@@ -84,12 +90,16 @@ public class TaskService {
 
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
-        task.setPriority(request.getPriority());
         task.setDueDate(request.getDueDate());
         task.setPoints(request.getPoints());
         task.setEarnedPoints(request.getEarnedPoints());
         if (request.getStatus() != null) {
             task.setStatus(request.getStatus());
+        }
+        if (request.getExamPeriodId() != null) {
+            examPeriodRepository.findById(request.getExamPeriodId()).ifPresent(task::setExamPeriod);
+        } else {
+            task.setExamPeriod(null);
         }
 
         return TaskMapper.toDTO(taskRepository.save(task));

@@ -30,8 +30,7 @@ public class Subject {
 
     private String website;
 
-    @Enumerated(EnumType.STRING)
-    private Difficulty difficulty;
+    private String color;
 
     @Enumerated(EnumType.STRING)
     private SubjectStatus status = SubjectStatus.IN_PROGRESS;
@@ -45,6 +44,10 @@ public class Subject {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    private Semester semester;
 
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
@@ -76,12 +79,12 @@ public class Subject {
         this.website = website;
     }
 
-    public Difficulty getDifficulty() {
-        return difficulty;
+    public String getColor() {
+        return color;
     }
 
-    public void setDifficulty(Difficulty difficulty) {
-        this.difficulty = difficulty;
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public SubjectStatus getStatus() {
@@ -130,5 +133,13 @@ public class Subject {
 
     public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
+    }
+
+    public Semester getSemester() {
+        return semester;
+    }
+
+    public void setSemester(Semester semester) {
+        this.semester = semester;
     }
 }

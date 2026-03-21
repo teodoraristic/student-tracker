@@ -17,7 +17,6 @@ import com.studenttracker.backend.dto.TaskDTO;
 import com.studenttracker.backend.dto.request.CreateTaskRequest;
 import com.studenttracker.backend.exception.ForbiddenException;
 import com.studenttracker.backend.exception.NotFoundException;
-import com.studenttracker.backend.model.Priority;
 import com.studenttracker.backend.model.Subject;
 import com.studenttracker.backend.model.Task;
 import com.studenttracker.backend.model.TaskStatus;
@@ -74,7 +73,6 @@ class TaskServiceTest {
         CreateTaskRequest request = mock(CreateTaskRequest.class);
         when(request.getSubjectId()).thenReturn(5L);
         when(request.getTitle()).thenReturn("Lab Report");
-        when(request.getPriority()).thenReturn(Priority.HIGH);
 
         when(subjectService.getByIdAndUser(5L, user)).thenReturn(subject);
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {

@@ -16,11 +16,10 @@ public class TaskMapper {
                     .toList()
                 : List.of();
 
-        return new TaskDTO(
+        TaskDTO dto = new TaskDTO(
                 task.getId(),
                 task.getTitle(),
                 task.getDescription(),
-                task.getPriority(),
                 task.getStatus(),
                 task.getDueDate(),
                 task.getPoints(),
@@ -28,5 +27,10 @@ public class TaskMapper {
                 task.getSubject().getId(),
                 subTaskDTOs
         );
+        if (task.getExamPeriod() != null) {
+            dto.setExamPeriodId(task.getExamPeriod().getId());
+            dto.setExamPeriodName(task.getExamPeriod().getName());
+        }
+        return dto;
     }
 }

@@ -1,62 +1,61 @@
-export default function Button({ 
-  variant = 'primary', 
-  size = 'md', 
-  children, 
+export default function Button({
+  variant = 'primary',
+  size = 'md',
+  children,
   style = {},
-  ...props 
+  ...props
 }) {
   const baseStyles = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.15s ease',
     fontWeight: '500',
     border: 'none',
     cursor: 'pointer',
-    fontFamily: "-apple-system, 'SF Pro Display', Inter, system-ui, sans-serif",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   };
-  
+
   const variants = {
     primary: {
-      backgroundColor: '#f43f5e',
+      backgroundColor: 'var(--rose-400)',
       color: 'white',
-      boxShadow: '0 2px 8px rgba(244, 63, 94, 0.2)',
     },
     secondary: {
-      backgroundColor: '#f5f5f5',
-      color: '#171717',
-      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+      backgroundColor: 'var(--surface-3)',
+      color: 'var(--ink)',
+      border: '1px solid var(--border)',
     },
     ghost: {
       backgroundColor: 'transparent',
-      color: '#171717',
+      color: 'var(--ink)',
     },
     outline: {
       backgroundColor: 'transparent',
-      border: '1px solid #e5e5e5',
-      color: '#171717',
+      border: '1px solid var(--border)',
+      color: 'var(--ink)',
     },
   };
-  
+
   const sizes = {
     sm: {
       padding: '6px 12px',
-      fontSize: '14px',
-      borderRadius: '8px',
+      fontSize: '13px',
+      borderRadius: 'var(--r-sm)',
     },
     md: {
-      padding: '10px 16px',
-      fontSize: '16px',
-      borderRadius: '12px',
+      padding: '7px 16px',
+      fontSize: '13px',
+      borderRadius: 'var(--r-md)',
     },
     lg: {
-      padding: '12px 24px',
-      fontSize: '18px',
-      borderRadius: '16px',
+      padding: '10px 22px',
+      fontSize: '14px',
+      borderRadius: 'var(--r-lg)',
     },
   };
-  
+
   return (
     <button
       style={{

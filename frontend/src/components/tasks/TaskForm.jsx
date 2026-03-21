@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Priority, PriorityLabels } from "../../utils/enums";
 
 const toDateInputStr = (date) => {
     if (!date) return "";
@@ -14,7 +13,6 @@ export default function TaskForm({ onSubmit, onCancel, initialData = null, defau
     const [formData, setFormData] = useState({
         title: initialData?.title || "",
         description: initialData?.description || "",
-        priority: initialData?.priority || "MEDIUM",
         dueDate: toDateInputStr(initialData?.dueDate) || defaultDate || "",
         points: initialData?.points || "",
     });
@@ -62,33 +60,15 @@ export default function TaskForm({ onSubmit, onCancel, initialData = null, defau
                 />
             </div>
 
-            <div style={styles.field}>
-                <label style={styles.label}>Priority *</label>
-                <select
-                    name="priority"
-                    value={formData.priority}
-                    onChange={handleChange}
-                    style={styles.select}
-                    required
-                >
-                    {Object.values(Priority).map(p => (
-                        <option key={p} value={p}>
-                            {PriorityLabels[p]}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
             <div style={styles.row}>
                 <div style={styles.field}>
-                    <label style={styles.label}>Due Date *</label>
+                    <label style={styles.label}>Due Date (optional)</label>
                     <input
                         type="date"
                         name="dueDate"
                         value={formData.dueDate}
                         onChange={handleChange}
                         style={styles.input}
-                        required
                     />
                 </div>
 
@@ -122,81 +102,101 @@ const styles = {
     form: {
         display: "flex",
         flexDirection: "column",
-        gap: "24px",
+        gap: "20px",
     },
     field: {
         display: "flex",
         flexDirection: "column",
-        gap: "8px",
+        gap: "6px",
         flex: 1,
     },
     row: {
         display: "flex",
-        gap: "16px",
+        gap: "14px",
     },
     label: {
-        fontSize: "14px",
+        fontSize: "13px",
         fontWeight: "600",
-        color: "#171717",
+        color: "var(--ink)",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
     },
     input: {
-        padding: "12px 14px",
-        fontSize: "15px",
-        border: "1px solid #e5e5e5",
-        borderRadius: "10px",
-        fontFamily: "inherit",
-        transition: "all 0.2s ease",
+        padding: "10px 12px",
+        fontSize: "13px",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--r-md)",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+        transition: "all 0.15s ease",
         outline: "none",
+        color: "var(--ink)",
+        background: "var(--surface)",
     },
     textarea: {
-        padding: "12px 14px",
-        fontSize: "15px",
-        border: "1px solid #e5e5e5",
-        borderRadius: "10px",
-        fontFamily: "inherit",
+        padding: "10px 12px",
+        fontSize: "13px",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--r-md)",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
         resize: "vertical",
         minHeight: "80px",
-        transition: "all 0.2s ease",
+        transition: "all 0.15s ease",
         outline: "none",
+        color: "var(--ink)",
+        background: "var(--surface)",
     },
     select: {
-        padding: "12px 14px",
-        fontSize: "15px",
-        border: "1px solid #e5e5e5",
-        borderRadius: "10px",
-        fontFamily: "inherit",
-        transition: "all 0.2s ease",
+        padding: "10px 12px",
+        fontSize: "13px",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--r-md)",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+        transition: "all 0.15s ease",
         outline: "none",
-        background: "#ffffff",
+        background: "var(--surface)",
         cursor: "pointer",
+        color: "var(--ink)",
+    },
+    examToggleRow: {
+        display: "flex",
+        alignItems: "center",
+    },
+    examToggleLabel: {
+        display: "flex",
+        alignItems: "center",
+        fontSize: "13px",
+        fontWeight: "500",
+        color: "var(--ink-2)",
+        cursor: "pointer",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
     },
     buttons: {
         display: "flex",
-        gap: "12px",
+        gap: "10px",
         justifyContent: "flex-end",
-        marginTop: "10px",
+        marginTop: "6px",
     },
     cancelBtn: {
-        padding: "10px 20px",
-        backgroundColor: "#f5f5f5",
-        color: "#171717",
-        border: "1px solid #e5e5e5",
-        borderRadius: "10px",
+        padding: "8px 18px",
+        backgroundColor: "var(--surface-3)",
+        color: "var(--ink)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--r-md)",
         cursor: "pointer",
-        fontSize: "15px",
+        fontSize: "13px",
         fontWeight: "500",
-        transition: "all 0.2s ease",
+        transition: "all 0.15s ease",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
     },
     submitBtn: {
-        padding: "10px 20px",
-        backgroundColor: "#f43f5e",
+        padding: "8px 18px",
+        backgroundColor: "var(--rose-400)",
         color: "white",
         border: "none",
-        borderRadius: "10px",
+        borderRadius: "var(--r-md)",
         cursor: "pointer",
-        fontSize: "15px",
-        fontWeight: "600",
-        transition: "all 0.2s ease",
-        boxShadow: "0 2px 8px rgba(244, 63, 94, 0.2)",
+        fontSize: "13px",
+        fontWeight: "500",
+        transition: "all 0.15s ease",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
     },
 };

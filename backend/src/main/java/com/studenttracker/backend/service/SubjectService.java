@@ -12,20 +12,21 @@ import com.studenttracker.backend.exception.ConflictException;
 import com.studenttracker.backend.exception.ForbiddenException;
 import com.studenttracker.backend.exception.NotFoundException;
 import com.studenttracker.backend.mapper.SubjectMapper;
-import com.studenttracker.backend.model.Difficulty;
 import com.studenttracker.backend.model.Subject;
 import com.studenttracker.backend.model.SubjectStatus;
-import com.studenttracker.backend.model.Task;
 import com.studenttracker.backend.model.User;
 import com.studenttracker.backend.repository.SubjectRepository;
+import com.studenttracker.backend.repository.SemesterRepository;
 
 @Service
 public class SubjectService {
 
     private final SubjectRepository subjectRepository;
+    private final SemesterRepository semesterRepository;
 
-    public SubjectService(SubjectRepository subjectRepository) {
+    public SubjectService(SubjectRepository subjectRepository, SemesterRepository semesterRepository) {
         this.subjectRepository = subjectRepository;
+        this.semesterRepository = semesterRepository;
     }
 
     public SubjectDTO create(CreateSubjectRequest request, User user) {
@@ -37,8 +38,13 @@ public class SubjectService {
         Subject subject = new Subject();
         subject.setName(request.getName());
         subject.setWebsite(request.getWebsite());
-        subject.setDifficulty(request.getDifficulty());
         subject.setUser(user);
+        String[] colors = {"#f4607e","#1a5fb4","#0a7c5c","#b45309","#7c3aed","#0891b2","#be185d","#15803d"};
+        long count = subjectRepository.countByUser(user);
+        subject.setColor(colors[(int)(count % colors.length)]);
+        if (request.getSemesterId() != null) {
+            subject.setSemester(semesterRepository.findById(request.getSemesterId()).orElse(null));
+        }
 
         return SubjectMapper.toDTO(subjectRepository.save(subject));
     }
@@ -55,13 +61,6 @@ public class SubjectService {
                 .orElseThrow(() -> new NotFoundException("Subject not found"));
 
         return SubjectMapper.toDTO(subject);
-    }
-
-    public List<SubjectDTO> getAllByUserAndDifficulty(User user, Difficulty difficulty) {
-        return subjectRepository.findAllByUserAndDifficulty(user, difficulty)
-                .stream()
-                .map(SubjectMapper::toDTO)
-                .toList();
     }
 
     public Subject getById(Long id) {
@@ -84,7 +83,11 @@ public class SubjectService {
         Subject subject = getByIdAndUser(id, user);
         subject.setName(request.getName());
         subject.setWebsite(request.getWebsite());
-        subject.setDifficulty(request.getDifficulty());
+        if (request.getSemesterId() != null) {
+            subject.setSemester(semesterRepository.findById(request.getSemesterId()).orElse(null));
+        } else {
+            subject.setSemester(null);
+        }
         return SubjectMapper.toDTO(subjectRepository.save(subject));
     }
 
@@ -100,7 +103,7 @@ public class SubjectService {
         int totalPoints = subject.getTasks() != null
                 ? subject.getTasks().stream()
                         .filter(t -> t.getStatus().isDone() && t.getPoints() != null)
-                        .mapToInt(Task::getPoints)
+                        .mapToInt(t -> t.getEarnedPoints() != null ? t.getEarnedPoints() : t.getPoints())
                         .sum()
                 : 0;
 

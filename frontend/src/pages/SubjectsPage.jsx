@@ -1,234 +1,54 @@
 import { useState, useEffect } from "react";
 import { getAllSubjects, createSubject, finalizeSubject, resetSubjectStatus } from "../services/subjectService";
 import { getAllTasks } from "../services/taskService";
+import { getAllSemesters } from "../services/semesterService";
 import SubjectCard from "../components/subjects/SubjectCard";
 import SubjectForm from "../components/subjects/SubjectForm";
+import FinalizeModal from "../components/subjects/FinalizeModal";
 import Modal from "../components/common/Modal";
 import Button from "../components/ui/Button";
-import { Plus, BookOpen, Award, AlertTriangle, ChevronDown, X, Sparkles } from "lucide-react";
-import { getRiskAssessment } from "../services/aiService";
+import { Plus, BookOpen, Award } from "lucide-react";
 import { parseDateLocal } from "../utils/dateUtils";
-
-function FinalizeModal({ subject, onClose, onSave }) {
-  const autoGrade = (() => {
-    const pts = subject.totalPoints ?? 0;
-    if (pts >= 91) return 10;
-    if (pts >= 81) return 9;
-    if (pts >= 71) return 8;
-    if (pts >= 61) return 7;
-    if (pts >= 51) return 6;
-    return 5;
-  })();
-
-  const [useManual, setUseManual] = useState(false);
-  const [manualGrade, setManualGrade] = useState("");
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const effectiveGrade = useManual ? parseInt(manualGrade) : autoGrade;
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (useManual) {
-      const g = parseInt(manualGrade);
-      if (!manualGrade || isNaN(g) || g < 5 || g > 10) {
-        setError("Grade must be between 5 and 10.");
-        return;
-      }
-    }
-    setSaving(true);
-    try {
-      const payload = useManual ? { manualGradeOverride: parseInt(manualGrade) } : {};
-      await onSave(subject.id, payload);
-      onClose();
-    } catch {
-      setError("Failed to finalize subject. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const gradeColor = effectiveGrade >= 6 ? "#059669" : "#dc2626";
-  const gradeLabel = effectiveGrade >= 6 ? "PASSED" : "FAILED";
-
-  return (
-    <form onSubmit={handleSubmit} style={mStyles.form}>
-      {/* Points summary */}
-      <div style={mStyles.pointsBox}>
-        <span style={mStyles.pointsLabel}>Points earned from completed tasks</span>
-        <span style={mStyles.pointsValue}>{subject.totalPoints ?? 0} pts</span>
-      </div>
-
-      {/* Auto-calculated grade preview */}
-      <div style={{ ...mStyles.gradePreview, borderColor: gradeColor + "66", borderWidth: "2px", borderStyle: "solid" }}>
-        <div>
-          <div style={mStyles.gradePreviewLabel}>
-            {useManual ? "Manual grade" : "Calculated grade"}
-          </div>
-          <div style={{ ...mStyles.gradePreviewNum, color: gradeColor }}>
-            {useManual && manualGrade ? manualGrade : autoGrade}
-          </div>
-        </div>
-        <div style={{ ...mStyles.gradeBadge, background: gradeColor + "15", color: gradeColor, border: `1px solid ${gradeColor}40` }}>
-          {useManual && manualGrade
-            ? (parseInt(manualGrade) >= 6 ? "PASSED" : "FAILED")
-            : gradeLabel}
-        </div>
-      </div>
-
-      {/* Manual override toggle */}
-      <label style={mStyles.toggleRow}>
-        <input
-          type="checkbox"
-          checked={useManual}
-          onChange={(e) => {
-            setUseManual(e.target.checked);
-            setError("");
-            setManualGrade("");
-          }}
-          style={{ accentColor: "#f43f5e" }}
-        />
-        <span style={mStyles.toggleLabel}>Override with manual grade</span>
-      </label>
-
-      {useManual && (
-        <div style={mStyles.field}>
-          <label style={mStyles.label}>Grade (5–10)</label>
-          <input
-            type="number"
-            min={5}
-            max={10}
-            value={manualGrade}
-            onChange={(e) => { setManualGrade(e.target.value); setError(""); }}
-            style={mStyles.input}
-            placeholder="e.g. 8"
-            autoFocus
-          />
-        </div>
-      )}
-
-      {error && <div style={mStyles.error}>{error}</div>}
-
-      <div style={mStyles.buttons}>
-        <button type="button" onClick={onClose} style={mStyles.cancelBtn}>Cancel</button>
-        <button type="submit" disabled={saving} style={mStyles.submitBtn}>
-          {saving ? "Saving…" : "Confirm & Finalize"}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-const mStyles = {
-  form: { display: "flex", flexDirection: "column", gap: "18px" },
-  pointsBox: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "12px 16px",
-    background: "#f8fafc",
-    borderRadius: "10px",
-    border: "1px solid #e5e5e5",
-  },
-  pointsLabel: { fontSize: "13px", color: "#737373", fontWeight: "500" },
-  pointsValue: { fontSize: "16px", color: "#171717", fontWeight: "700" },
-  gradePreview: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "14px 16px",
-    background: "#fafafa",
-    borderRadius: "10px",
-    borderWidth: "2px",
-    borderStyle: "solid",
-  },
-  gradePreviewLabel: { fontSize: "12px", color: "#737373", marginBottom: "2px" },
-  gradePreviewNum: { fontSize: "32px", fontWeight: "700" },
-  gradeBadge: {
-    padding: "5px 12px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "700",
-    letterSpacing: "0.5px",
-  },
-  toggleRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    cursor: "pointer",
-  },
-  toggleLabel: { fontSize: "14px", color: "#525252", fontWeight: "500" },
-  field: { display: "flex", flexDirection: "column", gap: "6px" },
-  label: { fontSize: "14px", fontWeight: "600", color: "#171717" },
-  input: {
-    padding: "10px 14px",
-    fontSize: "15px",
-    border: "1px solid #e5e5e5",
-    borderRadius: "10px",
-    fontFamily: "inherit",
-    outline: "none",
-  },
-  error: {
-    fontSize: "13px",
-    color: "#dc2626",
-    background: "#fff5f5",
-    border: "1px solid #fca5a5",
-    borderRadius: "8px",
-    padding: "8px 12px",
-  },
-  buttons: { display: "flex", gap: "10px", justifyContent: "flex-end" },
-  cancelBtn: {
-    padding: "10px 20px",
-    background: "#f5f5f5",
-    color: "#171717",
-    border: "1px solid #e5e5e5",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "500",
-  },
-  submitBtn: {
-    padding: "10px 20px",
-    background: "#171717",
-    color: "#fff",
-    border: "none",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-};
 
 export default function SubjectsPage() {
   const [subjects, setSubjects] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [activeSemesterId, setActiveSemesterId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [finalizeTarget, setFinalizeTarget] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [riskItems, setRiskItems] = useState([]);
-  const [riskExpanded, setRiskExpanded] = useState(false);
-  const [riskDismissed, setRiskDismissed] = useState(false);
+  const [sortBy, setSortBy] = useState("status");
+  const [filterBy, setFilterBy] = useState("all");
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    getRiskAssessment()
-      .then(setRiskItems)
-      .catch(() => {});
-  }, []);
-
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [subjectsData, tasksData] = await Promise.all([
+      const [subjectsData, tasksData, semestersData] = await Promise.all([
         getAllSubjects(),
         getAllTasks(),
+        getAllSemesters(),
       ]);
       setSubjects(subjectsData);
       setTasks(tasksData);
+      setSemesters(semestersData);
+
+      // Auto-select the active semester by date range
+      if (semestersData.length > 0) {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const active = semestersData.find((s) => {
+          const start = s.startDate ? parseDateLocal(s.startDate) : null;
+          const end = s.endDate ? parseDateLocal(s.endDate) : null;
+          return start && end && now >= start && now <= end;
+        }) || semestersData.reduce((best, s) => (s.id > best.id ? s : best));
+        setActiveSemesterId(active.id);
+      }
     } catch (err) {
       console.error("Failed to fetch data:", err);
       setError("Failed to load subjects");
@@ -253,11 +73,10 @@ export default function SubjectsPage() {
       handleReset(subject.id);
       return;
     }
-    // Enrich with totalPoints from tasks
     const sTasks = tasks.filter((t) => t.subjectId === subject.id);
     const totalPoints = sTasks
       .filter((t) => t.status === "DONE" && t.points != null)
-      .reduce((sum, t) => sum + t.points, 0);
+      .reduce((sum, t) => sum + (t.earnedPoints != null ? t.earnedPoints : t.points), 0);
     setFinalizeTarget({ ...subject, totalPoints });
   };
 
@@ -299,7 +118,7 @@ export default function SubjectsPage() {
       .sort((a, b) => parseDateLocal(a.dueDate) - parseDateLocal(b.dueDate))[0] || null;
     const totalPoints = sTasks
       .filter((t) => t.status === "DONE" && t.points != null)
-      .reduce((sum, t) => sum + t.points, 0);
+      .reduce((sum, t) => sum + (t.earnedPoints != null ? t.earnedPoints : t.points), 0);
     return {
       ...s,
       totalPoints,
@@ -310,38 +129,48 @@ export default function SubjectsPage() {
     };
   });
 
-  const difficultyOrder = { HARD: 0, MEDIUM: 1, EASY: 2 };
+  const filteredBySemester = activeSemesterId == null
+    ? enrichedSubjects
+    : enrichedSubjects.filter((s) => s.semesterId === activeSemesterId);
 
-  const sortedSubjects = [...enrichedSubjects].sort((a, b) => {
-    const aActive = (a.status || "IN_PROGRESS") === "IN_PROGRESS";
-    const bActive = (b.status || "IN_PROGRESS") === "IN_PROGRESS";
-
-    // IN_PROGRESS always before finalized
-    if (aActive !== bActive) return aActive ? -1 : 1;
-
-    // Within IN_PROGRESS: harder difficulty first
-    if (aActive && bActive) {
-      const dA = difficultyOrder[a.difficulty] ?? 1;
-      const dB = difficultyOrder[b.difficulty] ?? 1;
-      if (dA !== dB) return dA - dB;
-    }
-
-    // Tiebreaker: overdue → upcoming → completion → name
-    if (b._overdueCount !== a._overdueCount) return b._overdueCount - a._overdueCount;
-    if (b._upcomingCount !== a._upcomingCount) return b._upcomingCount - a._upcomingCount;
-    if (a._completionPct !== b._completionPct) return a._completionPct - b._completionPct;
-    return a.name.localeCompare(b.name);
+  const filteredSubjects = filteredBySemester.filter((s) => {
+    if (filterBy === "in_progress") return (s.status || "IN_PROGRESS") === "IN_PROGRESS";
+    if (filterBy === "passed") return s.status === "PASSED";
+    return true;
   });
 
-  const totalOverdue = tasks.filter(
-    (t) => t.status !== "DONE" && t.dueDate && parseDateLocal(t.dueDate) < today
-  ).length;
-  const totalThisWeek = tasks.filter((t) => {
-    if (t.status === "DONE" || !t.dueDate) return false;
-    const d = parseDateLocal(t.dueDate);
-    return d >= today && d <= in7Days;
-  }).length;
+  const sortFn = (a, b) => {
+    if (sortBy === "status") {
+      const aActive = (a.status || "IN_PROGRESS") === "IN_PROGRESS";
+      const bActive = (b.status || "IN_PROGRESS") === "IN_PROGRESS";
+      if (aActive !== bActive) return aActive ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    }
+    if (sortBy === "passed_first") {
+      const aPassed = a.status === "PASSED";
+      const bPassed = b.status === "PASSED";
+      if (aPassed !== bPassed) return aPassed ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    }
+    if (sortBy === "progress") return b._completionPct - a._completionPct;
+    return a.name.localeCompare(b.name);
+  };
+
+  const sortedSubjects = [...filteredSubjects].sort(sortFn);
+
   const passedCount = subjects.filter((s) => s.status === "PASSED").length;
+
+  const gradedSubjects = subjects.filter((s) => s.status === "PASSED" && s.finalGrade != null);
+  const avgGrade = gradedSubjects.length > 0
+    ? (gradedSubjects.reduce((sum, s) => sum + s.finalGrade, 0) / gradedSubjects.length).toFixed(2)
+    : null;
+
+  const hasInProgress = sortedSubjects.some((s) => (s.status || "IN_PROGRESS") === "IN_PROGRESS");
+  const hasFinalized = sortedSubjects.some((s) => s.status === "PASSED" || s.status === "FAILED");
+  const showGroups = filterBy === "all" && hasInProgress && hasFinalized;
+
+  const inProgressGroup = sortedSubjects.filter((s) => (s.status || "IN_PROGRESS") === "IN_PROGRESS");
+  const finalizedGroup = sortedSubjects.filter((s) => s.status === "PASSED" || s.status === "FAILED");
 
   if (loading) {
     return (
@@ -381,80 +210,77 @@ export default function SubjectsPage() {
             <span style={styles.statNum}>{subjects.length}</span>
             <span style={styles.statLabel}>Subjects</span>
           </div>
-          <span style={styles.statDivider}>|</span>
-          <div style={styles.statItem}>
-            <span style={{ ...styles.statNum, color: totalOverdue > 0 ? "#dc2626" : "#171717" }}>
-              {totalOverdue}
-            </span>
-            <span style={styles.statLabel}>Overdue</span>
-          </div>
-          <span style={styles.statDivider}>|</span>
-          <div style={styles.statItem}>
-            <span style={{ ...styles.statNum, color: totalThisWeek > 0 ? "#d97706" : "#171717" }}>
-              {totalThisWeek}
-            </span>
-            <span style={styles.statLabel}>Due This Week</span>
-          </div>
           {passedCount > 0 && (
             <>
               <span style={styles.statDivider}>|</span>
               <div style={styles.statItem}>
-                <Award size={16} color="#059669" />
-                <span style={{ ...styles.statNum, color: "#059669" }}>{passedCount}</span>
+                <Award size={16} color="var(--color-done)" />
+                <span style={{ ...styles.statNum, color: "var(--color-done)" }}>{passedCount}</span>
                 <span style={styles.statLabel}>Passed</span>
+              </div>
+            </>
+          )}
+          {avgGrade !== null && (
+            <>
+              <span style={styles.statDivider}>|</span>
+              <div style={styles.statItem}>
+                <span style={styles.statNum}>{avgGrade}</span>
+                <span style={styles.statLabel}>Avg grade</span>
               </div>
             </>
           )}
         </div>
       )}
 
-      {/* AI Risk Banner */}
-      {!riskDismissed && riskItems.length > 0 && (
-        <div style={styles.riskBanner}>
-          <div style={styles.riskBannerRow}>
-            <div style={styles.riskBannerLeft}>
-              <Sparkles size={15} color="#d97706" style={{ flexShrink: 0 }} />
-              <span style={styles.riskBannerText}>
-                AI detected <strong>{riskItems.length}</strong> assignment{riskItems.length !== 1 ? "s" : ""} at risk this week
-              </span>
-            </div>
-            <div style={styles.riskBannerActions}>
-              <button style={styles.riskToggleBtn} onClick={() => setRiskExpanded((v) => !v)}>
-                {riskExpanded ? "Hide" : "View"}
-                <ChevronDown size={13} style={{ transform: riskExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
-              </button>
-              <button style={styles.riskDismissBtn} onClick={() => setRiskDismissed(true)}>
-                <X size={13} />
-              </button>
-            </div>
-          </div>
+      {/* Semester tabs */}
+      {semesters.length > 0 && subjects.length > 0 && (
+        <div style={styles.semesterTabs}>
+          <button
+            style={{ ...styles.semesterTab, ...(activeSemesterId == null ? styles.semesterTabActive : {}) }}
+            onClick={() => setActiveSemesterId(null)}
+          >
+            All
+          </button>
+          {semesters.map((s) => (
+            <button
+              key={s.id}
+              style={{ ...styles.semesterTab, ...(activeSemesterId === s.id ? styles.semesterTabActive : {}) }}
+              onClick={() => setActiveSemesterId(s.id)}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
-          {riskExpanded && (
-            <div style={styles.riskList}>
-              {riskItems.map((item) => {
-                const isHigh = item.riskLevel === "HIGH";
-                return (
-                  <div key={item.taskId} style={styles.riskItem}>
-                    <span style={{
-                      ...styles.riskLevelBadge,
-                      background: isHigh ? "#fee2e2" : "#fef3c7",
-                      color: isHigh ? "#dc2626" : "#d97706",
-                      border: `1px solid ${isHigh ? "#fca5a5" : "#fcd34d"}`,
-                    }}>
-                      {item.riskLevel}
-                    </span>
-                    <div style={styles.riskItemBody}>
-                      <span style={styles.riskItemTitle}>{item.title}</span>
-                      {item.subjectName && (
-                        <span style={styles.riskItemSubject}>{item.subjectName}</span>
-                      )}
-                      <span style={styles.riskItemReason}>{item.reason}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* Toolbar */}
+      {subjects.length > 0 && (
+        <div style={styles.toolbar}>
+          <div style={styles.toolbarGroup}>
+            <span style={styles.toolbarLabel}>Sort</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={styles.toolbarSelect}
+            >
+              <option value="status">Status</option>
+              <option value="passed_first">Passed first</option>
+              <option value="progress">Progress</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
+          <div style={styles.toolbarGroup}>
+            <span style={styles.toolbarLabel}>Show</span>
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value)}
+              style={styles.toolbarSelect}
+            >
+              <option value="all">All</option>
+              <option value="in_progress">In Progress</option>
+              <option value="passed">Passed</option>
+            </select>
+          </div>
         </div>
       )}
 
@@ -476,6 +302,37 @@ export default function SubjectsPage() {
             Add Your First Subject
           </Button>
         </div>
+      ) : showGroups ? (
+        <>
+          <div style={styles.sectionLabel}>In Progress</div>
+          <div style={styles.grid}>
+            {inProgressGroup.map((s) => (
+              <SubjectCard
+                key={s.id}
+                subject={s}
+                nextDeadlineTask={s._nextDeadlineTask}
+                overdueCount={s._overdueCount}
+                upcomingCount={s._upcomingCount}
+                completionPct={s._completionPct}
+                onFinalize={handleFinalizeClick}
+              />
+            ))}
+          </div>
+          <div style={styles.sectionLabel}>Passed</div>
+          <div style={styles.grid}>
+            {finalizedGroup.map((s) => (
+              <SubjectCard
+                key={s.id}
+                subject={s}
+                nextDeadlineTask={s._nextDeadlineTask}
+                overdueCount={s._overdueCount}
+                upcomingCount={s._upcomingCount}
+                completionPct={s._completionPct}
+                onFinalize={handleFinalizeClick}
+              />
+            ))}
+          </div>
+        </>
       ) : (
         <div style={styles.grid}>
           {sortedSubjects.map((s) => (
@@ -493,14 +350,11 @@ export default function SubjectsPage() {
       )}
 
       {/* Add subject modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add New Subject"
-      >
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Subject">
         <SubjectForm
           onSubmit={handleAddSubject}
           onCancel={() => setIsModalOpen(false)}
+          semesters={semesters}
         />
       </Modal>
 
@@ -525,9 +379,9 @@ export default function SubjectsPage() {
 const styles = {
   container: { width: "100%", maxWidth: "1400px", margin: "0 auto" },
   loadingContainer: { display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" },
-  loadingText: { fontSize: "16px", color: "#737373" },
+  loadingText: { fontSize: "16px", color: "var(--ink-3)" },
   errorContainer: { display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "400px", gap: "16px" },
-  errorText: { fontSize: "16px", color: "#dc2626" },
+  errorText: { fontSize: "16px", color: "var(--color-overdue)" },
   header: {
     display: "flex",
     justifyContent: "space-between",
@@ -535,26 +389,93 @@ const styles = {
     marginBottom: "24px",
     gap: "20px",
   },
-  title: { fontSize: "32px", fontWeight: "600", color: "#171717", margin: "0 0 8px 0" },
-  subtitle: { fontSize: "16px", color: "#737373", margin: 0 },
+  title: {
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "32px", fontWeight: "400", color: "var(--ink)", margin: "0 0 6px 0",
+  },
+  subtitle: { fontSize: "14px", color: "var(--ink-3)", margin: 0 },
   statsRow: {
     display: "flex",
     alignItems: "center",
     gap: "20px",
-    marginBottom: "28px",
-    padding: "14px 20px",
-    background: "#fafafa",
-    border: "1px solid #f0f0f0",
-    borderRadius: "12px",
+    marginBottom: "24px",
+    padding: "12px 20px",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-lg)",
   },
   statItem: { display: "flex", alignItems: "baseline", gap: "7px" },
-  statNum: { fontSize: "20px", fontWeight: "700", color: "#171717" },
-  statLabel: { fontSize: "13px", color: "#737373", fontWeight: "500" },
-  statDivider: { color: "#d4d4d4", fontSize: "16px", userSelect: "none" },
+  statNum: {
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "22px", fontWeight: "400", color: "var(--ink)",
+  },
+  statLabel: { fontSize: "12px", color: "var(--ink-3)", fontWeight: "500" },
+  statDivider: { color: "var(--border-2)", fontSize: "16px", userSelect: "none" },
+  semesterTabs: {
+    display: "flex",
+    gap: "8px",
+    flexWrap: "wrap",
+    marginBottom: "16px",
+  },
+  semesterTab: {
+    padding: "6px 14px",
+    borderRadius: "99px",
+    border: "1px solid var(--border)",
+    background: "var(--surface)",
+    color: "var(--ink-3)",
+    fontSize: "13px",
+    fontWeight: "500",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  semesterTabActive: {
+    background: "var(--rose-400)",
+    border: "1px solid var(--rose-400)",
+    color: "#ffffff",
+    fontWeight: "600",
+  },
+  toolbar: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    marginBottom: "20px",
+  },
+  toolbarGroup: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+  },
+  toolbarLabel: {
+    fontSize: "12px",
+    color: "var(--ink-3)",
+    fontWeight: "500",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  toolbarSelect: {
+    padding: "6px 10px",
+    fontSize: "13px",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-md)",
+    background: "var(--surface)",
+    color: "var(--ink)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    cursor: "pointer",
+    outline: "none",
+  },
+  sectionLabel: {
+    fontSize: "11px",
+    fontWeight: "700",
+    letterSpacing: "0.07em",
+    textTransform: "uppercase",
+    color: "var(--ink-3)",
+    margin: "1.25rem 0 0.6rem",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: "24px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+    gap: "16px",
   },
   emptyState: {
     display: "flex",
@@ -565,50 +486,18 @@ const styles = {
     textAlign: "center",
   },
   emptyIcon: {
-    width: "120px",
-    height: "120px",
+    width: "100px",
+    height: "100px",
     borderRadius: "50%",
-    background: "#fafafa",
+    background: "var(--surface-2)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: "24px",
+    marginBottom: "20px",
   },
-  emptyTitle: { fontSize: "24px", fontWeight: "600", color: "#171717", margin: "0 0 12px 0" },
-  emptyText: { fontSize: "16px", color: "#737373", margin: 0, maxWidth: "400px" },
-
-  riskBanner: {
-    background: "#fffbeb", border: "1px solid #fde68a",
-    borderRadius: "12px", padding: "12px 16px", marginBottom: "20px",
+  emptyTitle: {
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "24px", fontWeight: "400", color: "var(--ink)", margin: "0 0 10px 0",
   },
-  riskBannerRow: {
-    display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px",
-  },
-  riskBannerLeft: { display: "flex", alignItems: "center", gap: "8px" },
-  riskBannerText: { fontSize: "13px", fontWeight: "500", color: "#92400e" },
-  riskBannerActions: { display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 },
-  riskToggleBtn: {
-    display: "flex", alignItems: "center", gap: "4px",
-    fontSize: "12px", fontWeight: "600", color: "#d97706",
-    background: "transparent", border: "none", cursor: "pointer", padding: 0,
-  },
-  riskDismissBtn: {
-    display: "flex", alignItems: "center", justifyContent: "center",
-    background: "transparent", border: "none", cursor: "pointer",
-    color: "#a3a3a3", padding: 0,
-  },
-  riskList: { display: "flex", flexDirection: "column", gap: "8px", marginTop: "12px" },
-  riskItem: { display: "flex", alignItems: "flex-start", gap: "10px" },
-  riskLevelBadge: {
-    fontSize: "10px", fontWeight: "700", padding: "2px 8px",
-    borderRadius: "20px", textTransform: "uppercase", letterSpacing: "0.5px",
-    flexShrink: 0, marginTop: "1px",
-  },
-  riskItemBody: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px", flex: 1 },
-  riskItemTitle: { fontSize: "13px", fontWeight: "600", color: "#171717" },
-  riskItemSubject: {
-    fontSize: "11px", fontWeight: "500", padding: "1px 7px",
-    borderRadius: "4px", background: "#fff1f2", color: "#f43f5e",
-  },
-  riskItemReason: { fontSize: "12px", color: "#737373", fontStyle: "italic", width: "100%" },
+  emptyText: { fontSize: "15px", color: "var(--ink-3)", margin: 0, maxWidth: "400px" },
 };

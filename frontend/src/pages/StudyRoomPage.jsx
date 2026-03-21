@@ -10,14 +10,14 @@ import {
 
 // ── constants ─────────────────────────────────────────────────────────────────
 const MODES = {
-  work:  { label: "Focus",  minutes: 25, color: "#f43f5e", bg: "#fff1f2" },
-  break: { label: "Break",  minutes: 5,  color: "#059669", bg: "#f0fdf4" },
+  work:  { label: "Focus",  minutes: 25, color: "var(--rose-400)", bg: "var(--rose-50)" },
+  break: { label: "Break",  minutes: 5,  color: "var(--color-done)", bg: "var(--color-done-bg)" },
 };
 
 const difficultyColors = {
-  EASY:   { bg: "#d1fae5", text: "#059669" },
-  MEDIUM: { bg: "#fef3c7", text: "#d97706" },
-  HARD:   { bg: "#fee2e2", text: "#dc2626" },
+  EASY:   { bg: "var(--color-done-bg)", text: "var(--color-done)" },
+  MEDIUM: { bg: "var(--color-due-soon-bg)", text: "var(--color-due-soon)" },
+  HARD:   { bg: "var(--color-overdue-bg)", text: "var(--color-overdue)" },
 };
 
 const fmtDuration = (sec) => {
@@ -66,7 +66,7 @@ export default function StudyRoomPage() {
           getAllTasks(),
           getTodaySessions(),
         ]);
-        setSubjects(subs.filter((s) => s.status !== "DONE"));
+        setSubjects(subs.filter((s) => s.status !== "PASSED" && s.status !== "FAILED"));
         setTasks(tsks);
         setTodaySessions(hist);
       } catch (err) {
@@ -180,7 +180,7 @@ export default function StudyRoomPage() {
       {/* ── header ────────────────────────────────────────────────────────── */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
-          <FlameKindling size={26} color="#f43f5e" />
+          <FlameKindling size={26} color="var(--rose-400)" />
           <div>
             <h1 style={styles.title}>Study Room</h1>
             <p style={styles.subtitle}>
@@ -192,7 +192,7 @@ export default function StudyRoomPage() {
         </div>
         {todaySessions.length > 0 && (
           <div style={styles.totalBadge}>
-            <Clock size={14} color="#f43f5e" />
+            <Clock size={14} color="var(--rose-400)" />
             <span>{fmtDuration(todayTotalSec)} studied today</span>
           </div>
         )}
@@ -224,7 +224,7 @@ export default function StudyRoomPage() {
           {/* ring */}
           <div style={styles.ringWrap}>
             <svg width="200" height="200" style={{ transform: "rotate(-90deg)" }}>
-              <circle cx="100" cy="100" r="88" fill="none" stroke="#f0f0f0" strokeWidth="10" />
+              <circle cx="100" cy="100" r="88" fill="none" stroke="var(--border)" strokeWidth="10" />
               <circle
                 cx="100" cy="100" r="88" fill="none"
                 stroke={cfg.color} strokeWidth="10"
@@ -279,7 +279,7 @@ export default function StudyRoomPage() {
           {/* What to study */}
           <div style={styles.card}>
             <h2 style={styles.cardTitle}>
-              <BookOpen size={17} color="#f43f5e" />
+              <BookOpen size={17} color="var(--rose-400)" />
               What are you studying?
             </h2>
 
@@ -362,11 +362,11 @@ export default function StudyRoomPage() {
             {selectedSubject && (
               <div style={{
                 ...styles.studyingBadge,
-                background: dc?.bg || "#fafafa",
-                borderColor: (dc?.text || "#e5e5e5") + "40",
+                background: dc?.bg || "var(--surface-2)",
+                borderColor: dc?.text || "var(--border)",
               }}>
-                <div style={{ ...styles.studyingDot, background: dc?.text || "#a3a3a3" }} />
-                <span style={{ ...styles.studyingText, color: dc?.text || "#737373" }}>
+                <div style={{ ...styles.studyingDot, background: dc?.text || "var(--ink-3)" }} />
+                <span style={{ ...styles.studyingText, color: dc?.text || "var(--ink-3)" }}>
                   {selectedSubtask
                     ? selectedSubtask.title
                     : selectedTask
@@ -380,7 +380,7 @@ export default function StudyRoomPage() {
           {/* Today's sessions history */}
           <div style={styles.card}>
             <h2 style={styles.cardTitle}>
-              <CheckSquare size={17} color="#f43f5e" />
+              <CheckSquare size={17} color="var(--rose-400)" />
               Today's Sessions
               {todaySessions.length > 0 && (
                 <span style={styles.sessionCount}>{todaySessions.length}</span>
@@ -389,7 +389,7 @@ export default function StudyRoomPage() {
 
             {todaySessions.length === 0 ? (
               <div style={styles.emptyHistory}>
-                <Clock size={32} color="#d4d4d4" />
+                <Clock size={32} color="var(--ink-4)" />
                 <p style={styles.emptyText}>No sessions yet today.</p>
               </div>
             ) : (
@@ -430,27 +430,28 @@ const styles = {
     marginBottom: "28px",
   },
   headerLeft: { display: "flex", alignItems: "center", gap: "14px" },
-  title: { fontSize: "26px", fontWeight: "700", color: "#171717", margin: 0 },
-  subtitle: { fontSize: "14px", color: "#a3a3a3", margin: "4px 0 0" },
+  title: { fontSize: "32px", fontWeight: "400", color: "var(--ink)", margin: 0, fontFamily: "'Instrument Serif', serif" },
+  subtitle: { fontSize: "14px", color: "var(--ink-3)", margin: "4px 0 0", fontFamily: "'DM Sans', system-ui, sans-serif" },
   totalBadge: {
     display: "flex", alignItems: "center", gap: "7px",
-    background: "#fff1f2", border: "1px solid #fecdd3",
-    borderRadius: "10px", padding: "8px 14px",
-    fontSize: "13px", fontWeight: "600", color: "#f43f5e",
+    background: "var(--rose-50)", border: "1px solid var(--rose-200)",
+    borderRadius: "var(--r-md)", padding: "8px 14px",
+    fontSize: "13px", fontWeight: "600", color: "var(--rose-400)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 
   columns: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", alignItems: "start" },
 
   // Timer card
   timerCard: {
-    background: "#fff", border: "1px solid #e5e5e5", borderRadius: "20px",
+    background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r-xl)",
     padding: "28px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px",
   },
   tabs: { display: "flex", gap: "10px", width: "100%" },
   tab: {
-    flex: 1, padding: "9px 0", fontSize: "13px", fontWeight: "600",
-    background: "#fafafa", border: "1px solid #e5e5e5", borderRadius: "10px",
-    color: "#a3a3a3", cursor: "pointer",
+    flex: 1, padding: "9px 0", fontSize: "13px", fontWeight: "500",
+    background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+    color: "var(--ink-3)", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 
   ringWrap: { position: "relative", width: "200px", height: "200px" },
@@ -459,89 +460,94 @@ const styles = {
     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
     gap: "6px",
   },
-  timeText: { fontSize: "44px", fontWeight: "700", letterSpacing: "2px", fontVariantNumeric: "tabular-nums" },
-  modeLabel: { fontSize: "13px", fontWeight: "600" },
+  timeText: { fontSize: "44px", fontWeight: "400", letterSpacing: "2px", fontVariantNumeric: "tabular-nums", fontFamily: "'Instrument Serif', serif" },
+  modeLabel: { fontSize: "13px", fontWeight: "500", fontFamily: "'DM Sans', system-ui, sans-serif" },
 
   controls: { display: "flex", alignItems: "center", gap: "10px" },
   resetBtn: {
     display: "flex", alignItems: "center", justifyContent: "center",
     width: "40px", height: "40px", background: "transparent",
-    border: "1px solid #e5e5e5", borderRadius: "12px",
-    color: "#a3a3a3", cursor: "pointer",
+    border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+    color: "var(--ink-3)", cursor: "pointer",
   },
   playBtn: {
     display: "flex", alignItems: "center", gap: "8px",
-    padding: "11px 28px", border: "none", borderRadius: "12px",
-    color: "#fff", fontSize: "15px", fontWeight: "700", cursor: "pointer",
+    padding: "11px 28px", border: "none", borderRadius: "var(--r-md)",
+    color: "#fff", fontSize: "14px", fontWeight: "500", cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   endBtn: {
     display: "flex", alignItems: "center",
-    padding: "11px 18px", border: "1px solid #e5e5e5", borderRadius: "12px",
-    background: "#fafafa", color: "#737373", fontSize: "14px", fontWeight: "600", cursor: "pointer",
+    padding: "11px 18px", border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+    background: "var(--surface-2)", color: "var(--ink-2)", fontSize: "13px", fontWeight: "500", cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 
   toast: {
-    padding: "10px 18px", background: "#f0fdf4", border: "1px solid #bbf7d0",
-    borderRadius: "10px", fontSize: "13px", fontWeight: "600", color: "#166534",
+    padding: "10px 18px", background: "var(--color-done-bg)", border: "1px solid var(--color-done)",
+    borderRadius: "var(--r-md)", fontSize: "13px", fontWeight: "600", color: "var(--color-done)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 
   // Right column
   rightCol: { display: "flex", flexDirection: "column", gap: "16px" },
   card: {
-    background: "#fff", border: "1px solid #e5e5e5", borderRadius: "16px", padding: "20px",
+    background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r-lg)", padding: "20px",
   },
   cardTitle: {
     display: "flex", alignItems: "center", gap: "8px",
-    fontSize: "16px", fontWeight: "700", color: "#171717", margin: "0 0 18px",
+    fontSize: "15px", fontWeight: "600", color: "var(--ink)", margin: "0 0 18px",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   sessionCount: {
     marginLeft: "auto",
-    fontSize: "12px", fontWeight: "700",
-    background: "#fff1f2", color: "#f43f5e",
-    padding: "2px 8px", borderRadius: "10px",
+    fontSize: "12px", fontWeight: "600",
+    background: "var(--rose-50)", color: "var(--rose-400)",
+    padding: "2px 8px", borderRadius: "99px",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 
   selectorRow: { display: "flex", flexDirection: "column", gap: "6px", marginBottom: "12px" },
-  selectorLabel: { fontSize: "12px", fontWeight: "600", color: "#a3a3a3", textTransform: "uppercase", letterSpacing: "0.5px" },
+  selectorLabel: { fontSize: "11px", fontWeight: "600", color: "var(--ink-3)", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'DM Sans', system-ui, sans-serif" },
   selectWrap: { position: "relative" },
   select: {
     width: "100%", appearance: "none",
     padding: "9px 32px 9px 12px",
-    fontSize: "14px", fontWeight: "500", color: "#171717",
-    background: "#fafafa", border: "1px solid #e5e5e5", borderRadius: "10px",
-    outline: "none", cursor: "pointer", fontFamily: "inherit",
+    fontSize: "13px", fontWeight: "500", color: "var(--ink)",
+    background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+    outline: "none", cursor: "pointer", fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   selectArrow: {
     position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
-    color: "#a3a3a3", pointerEvents: "none",
+    color: "var(--ink-3)", pointerEvents: "none",
   },
 
   studyingBadge: {
     display: "flex", alignItems: "center", gap: "10px",
     marginTop: "8px", padding: "10px 14px",
-    border: "1px solid", borderRadius: "10px",
+    border: "1px solid", borderRadius: "var(--r-md)",
   },
   studyingDot: { width: "8px", height: "8px", borderRadius: "50%", flexShrink: 0 },
-  studyingText: { fontSize: "13px", fontWeight: "600" },
+  studyingText: { fontSize: "13px", fontWeight: "600", fontFamily: "'DM Sans', system-ui, sans-serif" },
 
   emptyHistory: {
     display: "flex", flexDirection: "column", alignItems: "center",
     gap: "10px", padding: "24px 0", textAlign: "center",
   },
-  emptyText: { fontSize: "14px", color: "#a3a3a3", margin: 0 },
+  emptyText: { fontSize: "14px", color: "var(--ink-3)", margin: 0, fontFamily: "'DM Sans', system-ui, sans-serif" },
 
   historyList: { display: "flex", flexDirection: "column", gap: "8px" },
   historyItem: {
     display: "flex", alignItems: "center", gap: "12px",
-    padding: "10px 12px", background: "#fafafa",
-    border: "1px solid #f0f0f0", borderRadius: "10px",
+    padding: "10px 12px", background: "var(--surface-2)",
+    border: "1px solid var(--border)", borderRadius: "var(--r-md)",
   },
   historyDuration: {
-    fontSize: "13px", fontWeight: "700", color: "#f43f5e",
-    minWidth: "44px", flexShrink: 0,
+    fontSize: "13px", fontWeight: "600", color: "var(--rose-400)",
+    minWidth: "44px", flexShrink: 0, fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   historyMeta: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" },
-  historyPrimary: { fontSize: "13px", fontWeight: "600", color: "#171717", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  historySecondary: { fontSize: "11px", color: "#a3a3a3", fontWeight: "500" },
-  historyTime: { fontSize: "11px", color: "#c3c3c3", fontWeight: "500", flexShrink: 0 },
+  historyPrimary: { fontSize: "13px", fontWeight: "500", color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "'DM Sans', system-ui, sans-serif" },
+  historySecondary: { fontSize: "11px", color: "var(--ink-3)", fontWeight: "500", fontFamily: "'DM Sans', system-ui, sans-serif" },
+  historyTime: { fontSize: "11px", color: "var(--ink-4)", fontWeight: "500", flexShrink: 0, fontFamily: "'DM Sans', system-ui, sans-serif" },
 };

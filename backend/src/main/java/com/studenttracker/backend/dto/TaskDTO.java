@@ -3,7 +3,6 @@ package com.studenttracker.backend.dto;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.studenttracker.backend.model.Priority;
 import com.studenttracker.backend.model.TaskStatus;
 
 public class TaskDTO {
@@ -12,7 +11,6 @@ public class TaskDTO {
     private String title;
     private String description;
 
-    private Priority priority;
     private TaskStatus status;
 
     private LocalDate dueDate;
@@ -20,6 +18,9 @@ public class TaskDTO {
     private Integer earnedPoints;
 
     private Long subjectId;
+
+    private Long examPeriodId;
+    private String examPeriodName;
 
     private List<SubTaskDTO> subTasks;
 
@@ -29,7 +30,6 @@ public class TaskDTO {
             Long id,
             String title,
             String description,
-            Priority priority,
             TaskStatus status,
             LocalDate dueDate,
             Integer points,
@@ -40,7 +40,6 @@ public class TaskDTO {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.priority = priority;
         this.status = status;
         this.dueDate = dueDate;
         this.points = points;
@@ -58,9 +57,6 @@ public class TaskDTO {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public Priority getPriority() { return priority; }
-    public void setPriority(Priority priority) { this.priority = priority; }
-
     public TaskStatus getStatus() { return status; }
     public void setStatus(TaskStatus status) { this.status = status; }
 
@@ -75,6 +71,12 @@ public class TaskDTO {
 
     public Long getSubjectId() { return subjectId; }
     public void setSubjectId(Long subjectId) { this.subjectId = subjectId; }
+
+    public Long getExamPeriodId() { return examPeriodId; }
+    public void setExamPeriodId(Long examPeriodId) { this.examPeriodId = examPeriodId; }
+
+    public String getExamPeriodName() { return examPeriodName; }
+    public void setExamPeriodName(String examPeriodName) { this.examPeriodName = examPeriodName; }
 
     public List<SubTaskDTO> getSubTasks() { return subTasks; }
     public void setSubTasks(List<SubTaskDTO> subTasks) { this.subTasks = subTasks; }

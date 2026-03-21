@@ -9,7 +9,6 @@ import com.studenttracker.backend.dto.SubjectDTO;
 import com.studenttracker.backend.dto.request.CreateSubjectRequest;
 import com.studenttracker.backend.dto.request.FinalizeSubjectRequest;
 import com.studenttracker.backend.mapper.SubjectMapper;
-import com.studenttracker.backend.model.Difficulty;
 import com.studenttracker.backend.model.Subject;
 import com.studenttracker.backend.model.User;
 import com.studenttracker.backend.service.AuthService;
@@ -50,12 +49,6 @@ public class SubjectController {
     public SubjectDTO getByName(@PathVariable String name) {
         User user = authService.getCurrentUser();
         return subjectService.getByNameAndUser(name, user);
-    }
-
-    @GetMapping("/difficulty/{difficulty}")
-    public List<SubjectDTO> getByDifficulty(@PathVariable Difficulty difficulty) {
-        User user = authService.getCurrentUser();
-        return subjectService.getAllByUserAndDifficulty(user, difficulty);
     }
 
     @PutMapping("/{id}")

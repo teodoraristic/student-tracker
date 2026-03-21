@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import SubtaskForm from "../subtasks/SubtaskForm";
 import TaskForm from "./TaskForm";
+import ExamForm from "./ExamForm";
 import Modal from "../common/Modal";
-import { ChevronDown, ChevronRight, Calendar, Award, CheckCircle2, Circle, Plus, Edit2, Trash2, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, Award, CheckCircle2, Circle, Plus, Edit2, Trash2, X, GraduationCap } from "lucide-react";
 import { updateTask, updateTaskStatus, deleteTask } from "../../services/taskService";
 import { getSubtasksByTaskId, createSubtask, toggleSubtaskDone, deleteSubtask, updateSubtaskPlan } from "../../services/subtaskService";
 
@@ -139,14 +140,8 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
   today.setHours(0, 0, 0, 0);
   const isOverdue = task.status !== "DONE" && task.dueDate && new Date(task.dueDate) < today;
 
-  const priorityColors = {
-    LOW:    { bg: "#dcfce7", text: "#16a34a" },
-    MEDIUM: { bg: "#fef3c7", text: "#d97706" },
-    HIGH:   { bg: "#fee2e2", text: "#dc2626" },
-  };
-  const typeColor = priorityColors[task.priority] || { bg: "#f5f5f5", text: "#737373" };
-
   const isDone = task.status === "DONE";
+  const isExam = !!task.examPeriodId;
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -154,26 +149,29 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
     now.setHours(0, 0, 0, 0);
     const diffDays = Math.ceil((date - now) / (1000 * 60 * 60 * 24));
     if (diffDays < 0) {
-      if (isDone) return { text: date.toLocaleDateString("en-GB", { day: "numeric", month: "short" }), color: "#a3a3a3" };
-      return { text: `${Math.abs(diffDays)}d overdue`, color: "#dc2626" };
+      if (isDone) return { text: date.toLocaleDateString("en-GB", { day: "numeric", month: "short" }), color: "var(--ink-3)" };
+      return { text: `${Math.abs(diffDays)}d overdue`, color: "var(--color-overdue)" };
     }
-    if (diffDays === 0) return { text: "Due today", color: "#d97706" };
-    if (diffDays === 1) return { text: "Due tomorrow", color: "#d97706" };
-    if (diffDays <= 7) return { text: `${diffDays}d left`, color: "#2563eb" };
-    return { text: date.toLocaleDateString("en-GB", { day: "numeric", month: "short" }), color: "#737373" };
+    if (diffDays === 0) return { text: "Due today", color: "var(--color-due-soon)" };
+    if (diffDays === 1) return { text: "Due tomorrow", color: "var(--color-due-soon)" };
+    if (diffDays <= 7) return { text: `${diffDays}d left`, color: "var(--color-future)" };
+    return { text: date.toLocaleDateString("en-GB", { day: "numeric", month: "short" }), color: "var(--ink-3)" };
   };
 
   const dueDate = task.dueDate ? formatDate(task.dueDate) : null;
 
   return (
-    <div style={{ ...styles.card, ...(isDone ? styles.cardDone : isOverdue ? styles.cardOverdue : {}) }}>
+    <div style={{
+      ...styles.row,
+      ...(isDone ? styles.rowDone : isOverdue ? styles.rowOverdue : {}),
+    }}>
       {/* Main Row */}
       <div style={styles.mainRow} onClick={() => setOpen(!open)}>
 
         {/* Left */}
         <div style={styles.leftSection}>
           <span style={styles.chevron}>
-            {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            {open ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
           </span>
 
           <span
@@ -182,15 +180,18 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
             title={isDone ? "Mark as to do" : "Mark as done"}
           >
             {isDone
-              ? <CheckCircle2 size={20} color="#059669" />
-              : <Circle size={20} color={isOverdue ? "#fca5a5" : "#d4d4d4"} />
+              ? <CheckCircle2 size={18} color="var(--color-done)" />
+              : <Circle size={18} color={isOverdue ? "var(--color-overdue)" : "var(--ink-4)"} />
             }
           </span>
 
           <div style={styles.taskInfo}>
-            <span style={{ ...styles.taskTitle, ...(isDone ? styles.taskTitleDone : {}) }}>
-              {task.title}
-            </span>
+            <div style={styles.titleRow}>
+              {isExam && <GraduationCap size={14} color="var(--rose-500)" style={{ flexShrink: 0 }} />}
+              <span style={{ ...styles.taskTitle, ...(isDone ? styles.taskTitleDone : {}) }}>
+                {task.title}
+              </span>
+            </div>
             {task.description && (
               <span style={styles.taskDesc}>{task.description}</span>
             )}
@@ -199,23 +200,18 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
 
         {/* Right */}
         <div style={styles.rightSection}>
-          {/* Priority chip */}
-          <span style={{ ...styles.typeChip, background: typeColor.bg, color: typeColor.text }}>
-            {task.priority}
-          </span>
-
           {/* Due date */}
           {dueDate && !isDone && (
             <span style={{ ...styles.metaChip, color: dueDate.color }}>
-              <Calendar size={13} />
+              <Calendar size={12} />
               {dueDate.text}
             </span>
           )}
 
           {/* Points */}
           {task.points > 0 && (
-            <span style={{ ...styles.metaChip, color: "#f43f5e" }}>
-              <Award size={13} />
+            <span style={{ ...styles.metaChip, color: "var(--rose-400)" }}>
+              <Award size={12} />
               {isDone && task.earnedPoints != null
                 ? `${task.earnedPoints}/${task.points}pts`
                 : `${task.points}pts`}
@@ -228,14 +224,14 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
             style={styles.iconBtn}
             title="Edit assignment"
           >
-            <Edit2 size={15} />
+            <Edit2 size={14} />
           </button>
           <button
             onClick={handleDeleteTask}
             style={{ ...styles.iconBtn, ...styles.iconBtnDanger }}
             title="Delete assignment"
           >
-            <Trash2 size={15} />
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
@@ -322,7 +318,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
             onClick={(e) => { e.stopPropagation(); setIsAddSubtaskModalOpen(true); }}
             style={styles.addSubtaskBtn}
           >
-            <Plus size={15} />
+            <Plus size={14} />
             Add subtask
           </button>
         </div>
@@ -333,8 +329,11 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
         <SubtaskForm onSubmit={handleAddSubtask} onCancel={() => setIsAddSubtaskModalOpen(false)} />
       </Modal>
 
-      <Modal isOpen={isEditTaskModalOpen} onClose={() => setIsEditTaskModalOpen(false)} title="Edit Assignment">
-        <TaskForm initialData={task} onSubmit={handleEditTask} onCancel={() => setIsEditTaskModalOpen(false)} />
+      <Modal isOpen={isEditTaskModalOpen} onClose={() => setIsEditTaskModalOpen(false)} title={isExam ? "Edit Exam" : "Edit Assignment"}>
+        {isExam
+          ? <ExamForm initialData={task} onSubmit={handleEditTask} onCancel={() => setIsEditTaskModalOpen(false)} />
+          : <TaskForm initialData={task} onSubmit={handleEditTask} onCancel={() => setIsEditTaskModalOpen(false)} />
+        }
       </Modal>
 
       <Modal isOpen={isPointsModalOpen} onClose={() => setIsPointsModalOpen(false)} title="Points Earned">
@@ -364,38 +363,34 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
 }
 
 const styles = {
-  card: {
-    background: "#ffffff",
-    border: "1px solid #e5e5e5",
-    borderRadius: "12px",
-    marginBottom: "10px",
+  row: {
+    borderBottom: "1px solid var(--border)",
     overflow: "hidden",
-    transition: "box-shadow 0.15s ease",
+    transition: "background 0.1s ease",
   },
-  cardDone: {
-    opacity: 0.7,
+  rowDone: {
+    opacity: 0.65,
   },
-  cardOverdue: {
-    borderColor: "#fca5a5",
-    background: "#fffafa",
+  rowOverdue: {
+    background: "var(--color-overdue-bg)",
   },
   mainRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "14px 18px",
+    padding: "12px 16px",
     cursor: "pointer",
     gap: "12px",
   },
   leftSection: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "8px",
     flex: 1,
     minWidth: 0,
   },
   chevron: {
-    color: "#a3a3a3",
+    color: "var(--ink-4)",
     display: "flex",
     alignItems: "center",
     flexShrink: 0,
@@ -413,21 +408,28 @@ const styles = {
     minWidth: 0,
     flex: 1,
   },
+  titleRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    minWidth: 0,
+  },
   taskTitle: {
-    fontSize: "15px",
-    fontWeight: "600",
-    color: "#171717",
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "var(--ink)",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   taskTitleDone: {
     textDecoration: "line-through",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
   },
   taskDesc: {
-    fontSize: "13px",
-    color: "#a3a3a3",
+    fontSize: "12px",
+    color: "var(--ink-3)",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
@@ -435,48 +437,41 @@ const styles = {
   rightSection: {
     display: "flex",
     alignItems: "center",
-    gap: "6px",
+    gap: "5px",
     flexShrink: 0,
-  },
-  typeChip: {
-    fontSize: "11px",
-    fontWeight: "600",
-    padding: "3px 8px",
-    borderRadius: "5px",
-    letterSpacing: "0.3px",
-    textTransform: "uppercase",
   },
   metaChip: {
     display: "flex",
     alignItems: "center",
     gap: "4px",
-    fontSize: "12px",
+    fontSize: "11px",
     fontWeight: "500",
-    padding: "3px 8px",
-    borderRadius: "5px",
-    background: "#f5f5f5",
+    padding: "2px 7px",
+    borderRadius: "99px",
+    background: "var(--surface-3)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   iconBtn: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: "30px",
-    height: "30px",
+    width: "28px",
+    height: "28px",
     background: "transparent",
-    border: "1px solid #e5e5e5",
-    borderRadius: "6px",
-    color: "#a3a3a3",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-sm)",
+    color: "var(--ink-3)",
     cursor: "pointer",
     transition: "all 0.15s ease",
   },
   iconBtnDanger: {
-    color: "#fca5a5",
-    borderColor: "#fde8e8",
+    color: "var(--color-overdue)",
+    borderColor: "var(--color-overdue)30",
   },
   subtasksPanel: {
-    borderTop: "1px solid #f0f0f0",
-    padding: "14px 18px 14px 54px",
-    background: "#fafafa",
+    borderTop: "1px solid var(--border)",
+    padding: "12px 16px 12px 52px",
+    background: "var(--surface-2)",
   },
   subtasksHeader: {
     display: "flex",
@@ -485,54 +480,57 @@ const styles = {
     marginBottom: "10px",
   },
   subtasksLabel: {
-    fontSize: "13px",
+    fontSize: "11px",
     fontWeight: "600",
-    color: "#525252",
+    color: "var(--ink-3)",
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
   },
   subtasksCount: {
     fontSize: "12px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
   },
   subtasksList: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
+    gap: "4px",
     marginBottom: "10px",
   },
   subtaskItem: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
-    padding: "8px 12px",
-    borderRadius: "8px",
-    background: "#ffffff",
-    border: "1px solid #ebebeb",
+    padding: "7px 10px",
+    borderRadius: "var(--r-sm)",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
   },
   checkbox: {
-    width: "16px",
-    height: "16px",
+    width: "15px",
+    height: "15px",
     cursor: "pointer",
     flexShrink: 0,
+    accentColor: "var(--rose-400)",
   },
   subtaskText: {
-    fontSize: "14px",
-    color: "#171717",
+    fontSize: "13px",
+    color: "var(--ink)",
     flex: 1,
   },
   subtaskDone: {
     textDecoration: "line-through",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
   },
   subtaskDeleteBtn: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: "24px",
-    height: "24px",
+    width: "22px",
+    height: "22px",
     background: "transparent",
     border: "none",
     borderRadius: "4px",
-    color: "#d4d4d4",
+    color: "var(--ink-4)",
     cursor: "pointer",
     flexShrink: 0,
     padding: 0,
@@ -541,12 +539,12 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: "24px",
-    height: "24px",
+    width: "22px",
+    height: "22px",
     background: "transparent",
-    border: "1px dashed #d4d4d4",
+    border: "1px dashed var(--border-2)",
     borderRadius: "4px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
     cursor: "pointer",
     flexShrink: 0,
     padding: 0,
@@ -556,12 +554,12 @@ const styles = {
     alignItems: "center",
     gap: "4px",
     padding: "2px 7px",
-    background: "#fff1f2",
-    border: "1px solid #fecdd3",
-    borderRadius: "5px",
+    background: "var(--rose-50)",
+    border: "1px solid var(--rose-100)",
+    borderRadius: "99px",
     fontSize: "11px",
     fontWeight: "500",
-    color: "#f43f5e",
+    color: "var(--rose-500)",
     cursor: "pointer",
     flexShrink: 0,
     whiteSpace: "nowrap",
@@ -569,7 +567,7 @@ const styles = {
   unplanBtn: {
     background: "transparent",
     border: "none",
-    color: "#f43f5e",
+    color: "var(--rose-500)",
     cursor: "pointer",
     padding: "0 0 0 2px",
     fontSize: "13px",
@@ -578,8 +576,8 @@ const styles = {
   },
   planDateInput: {
     fontSize: "12px",
-    border: "1px solid #e5e5e5",
-    borderRadius: "6px",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-sm)",
     padding: "3px 6px",
     fontFamily: "inherit",
     outline: "none",
@@ -587,22 +585,23 @@ const styles = {
   },
   noSubtasks: {
     fontSize: "13px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
     margin: "0 0 10px 0",
   },
   addSubtaskBtn: {
     display: "flex",
     alignItems: "center",
     gap: "6px",
-    padding: "7px 12px",
+    padding: "6px 10px",
     background: "transparent",
-    border: "1px dashed #d4d4d4",
-    borderRadius: "7px",
-    color: "#a3a3a3",
-    fontSize: "13px",
+    border: "1px dashed var(--border-2)",
+    borderRadius: "var(--r-sm)",
+    color: "var(--ink-3)",
+    fontSize: "12px",
     fontWeight: "500",
     cursor: "pointer",
     transition: "all 0.15s ease",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 };
 
@@ -614,25 +613,27 @@ const pointsStyles = {
   },
   desc: {
     fontSize: "15px",
-    color: "#171717",
+    color: "var(--ink)",
     margin: 0,
   },
   max: {
     fontSize: "13px",
-    color: "#737373",
+    color: "var(--ink-3)",
     margin: 0,
   },
   input: {
     padding: "12px 14px",
     fontSize: "18px",
     fontWeight: "600",
-    border: "1px solid #e5e5e5",
-    borderRadius: "10px",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-md)",
     fontFamily: "inherit",
     outline: "none",
     textAlign: "center",
     width: "100%",
     boxSizing: "border-box",
+    color: "var(--ink)",
+    background: "var(--surface)",
   },
   buttons: {
     display: "flex",
@@ -641,24 +642,25 @@ const pointsStyles = {
     marginTop: "8px",
   },
   cancelBtn: {
-    padding: "10px 20px",
-    background: "#f5f5f5",
-    color: "#171717",
-    border: "1px solid #e5e5e5",
-    borderRadius: "10px",
+    padding: "9px 18px",
+    background: "var(--surface-3)",
+    color: "var(--ink)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-md)",
     cursor: "pointer",
-    fontSize: "15px",
+    fontSize: "14px",
     fontWeight: "500",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   confirmBtn: {
-    padding: "10px 20px",
-    background: "#f43f5e",
+    padding: "9px 18px",
+    background: "var(--rose-400)",
     color: "white",
     border: "none",
-    borderRadius: "10px",
+    borderRadius: "var(--r-md)",
     cursor: "pointer",
-    fontSize: "15px",
-    fontWeight: "600",
-    boxShadow: "0 2px 8px rgba(244, 63, 94, 0.2)",
+    fontSize: "14px",
+    fontWeight: "500",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 };

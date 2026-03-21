@@ -29,9 +29,6 @@ public class Task {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private Priority priority;
-
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TaskStatus status;
 
@@ -45,18 +42,21 @@ public class Task {
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
 
+    @ManyToOne
+    @JoinColumn(name = "exam_period_id")
+    private ExamPeriod examPeriod;
+
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SubTask> subTasks;
 
     public Task() {
     }
 
-    public Task(Long id, String title, String description, Priority priority, TaskStatus status, LocalDate dueDate,
+    public Task(Long id, String title, String description, TaskStatus status, LocalDate dueDate,
             Integer points, Subject subject, List<SubTask> subTasks) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.priority = priority;
         this.status = status;
         this.dueDate = dueDate;
         this.points = points;
@@ -86,14 +86,6 @@ public class Task {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
     }
 
     public Subject getSubject() {
@@ -142,6 +134,14 @@ public class Task {
 
     public void setEarnedPoints(Integer earnedPoints) {
         this.earnedPoints = earnedPoints;
+    }
+
+    public ExamPeriod getExamPeriod() {
+        return examPeriod;
+    }
+
+    public void setExamPeriod(ExamPeriod examPeriod) {
+        this.examPeriod = examPeriod;
     }
 
 }

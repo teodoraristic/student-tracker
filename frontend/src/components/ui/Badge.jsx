@@ -2,35 +2,35 @@ export default function Badge({ variant = 'default', children, style = {}, ...pr
   const baseStyles = {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '6px',
-    padding: '4px 10px',
-    fontSize: '12px',
-    fontWeight: '500',
-    borderRadius: '6px',
-    transition: 'all 0.2s ease',
-    fontFamily: "-apple-system, 'SF Pro Display', Inter, system-ui, sans-serif",
+    gap: '4px',
+    padding: '2px 9px',
+    fontSize: '11px',
+    fontWeight: '600',
+    borderRadius: '99px',
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    letterSpacing: '0.02em',
   };
 
   const variants = {
     default: {
-      backgroundColor: '#f5f5f5',
-      color: '#737373',
+      backgroundColor: 'var(--surface-3)',
+      color: 'var(--ink-3)',
     },
     primary: {
-      backgroundColor: '#fff5f7',
-      color: '#f43f5e',
+      backgroundColor: 'var(--rose-50)',
+      color: 'var(--rose-500)',
     },
     success: {
-      backgroundColor: '#d1fae5',
-      color: '#059669',
+      backgroundColor: 'var(--color-done-bg)',
+      color: 'var(--color-done)',
     },
     warning: {
-      backgroundColor: '#fef3c7',
-      color: '#d97706',
+      backgroundColor: 'var(--color-due-soon-bg)',
+      color: 'var(--color-due-soon)',
     },
     destructive: {
-      backgroundColor: '#fee2e2',
-      color: '#dc2626',
+      backgroundColor: 'var(--color-overdue-bg)',
+      color: 'var(--color-overdue)',
     },
   };
 

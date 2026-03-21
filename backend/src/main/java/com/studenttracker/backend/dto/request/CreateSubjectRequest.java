@@ -1,8 +1,6 @@
 package com.studenttracker.backend.dto.request;
 
-import com.studenttracker.backend.model.Difficulty;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public class CreateSubjectRequest {
 
@@ -11,8 +9,7 @@ public class CreateSubjectRequest {
 
     private String website;
 
-    @NotNull(message = "Difficulty is required")
-    private Difficulty difficulty;
+    private Long semesterId;
 
     public CreateSubjectRequest() {}
 
@@ -24,7 +21,11 @@ public class CreateSubjectRequest {
         return website;
     }
 
-    public Difficulty getDifficulty() {
-        return difficulty;
+    public Long getSemesterId() {
+        return semesterId;
+    }
+
+    public void setSemesterId(Long semesterId) {
+        this.semesterId = semesterId;
     }
 }

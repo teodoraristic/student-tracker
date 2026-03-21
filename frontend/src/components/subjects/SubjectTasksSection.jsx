@@ -1,12 +1,13 @@
 import { useState } from "react";
 import TaskRow from "../tasks/TaskRow";
-import { ListTodo, ChevronDown } from "lucide-react";
+import { ListTodo, ChevronDown, Plus } from "lucide-react";
 
 const FILTERS = [
   { key: "ALL",     label: "All" },
   { key: "TODO",    label: "To Do" },
   { key: "OVERDUE", label: "Overdue" },
   { key: "DONE",    label: "Done" },
+  { key: "EXAM",    label: "Exams" },
 ];
 
 const SORTS = [
@@ -24,7 +25,7 @@ const parseDateLocal = (raw) => {
 
 const STATUS_ORDER = { TODO: 0, DONE: 1 };
 
-export default function SubjectTasksSection({ tasks, filterStatus, setFilterStatus, onTaskUpdate, onTaskDelete }) {
+export default function SubjectTasksSection({ tasks, filterStatus, setFilterStatus, onTaskUpdate, onTaskDelete, onAddTask, onAddExam }) {
   const [sortBy, setSortBy] = useState("dueDate");
   const [sortOpen, setSortOpen] = useState(false);
 
@@ -36,6 +37,7 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
   const filtered =
     filterStatus === "ALL"     ? tasks :
     filterStatus === "OVERDUE" ? tasks.filter(isOverdue) :
+    filterStatus === "EXAM"    ? tasks.filter((t) => !!t.examPeriodId) :
                                  tasks.filter((t) => t.status === filterStatus);
 
   const sorted = [...filtered].sort((a, b) => {
@@ -111,7 +113,7 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
           </div>
         ) : (
           <div style={styles.fullEmpty}>
-            <ListTodo size={40} color="#d4d4d4" />
+            <ListTodo size={40} color="var(--ink-4)" />
             <p style={styles.emptyTitle}>No assignments yet</p>
             <p style={styles.emptySub}>Add your first assignment to start tracking progress</p>
           </div>
@@ -121,6 +123,24 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
           {sorted.map((t) => (
             <TaskRow key={t.id} task={t} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} />
           ))}
+        </div>
+      )}
+
+      {/* Add row */}
+      {(onAddTask || onAddExam) && (
+        <div style={styles.addRow}>
+          {onAddTask && (
+            <button style={styles.inlineAddBtn} onClick={onAddTask}>
+              <Plus size={14} color="var(--rose-400)" />
+              <span style={styles.inlineAddText}>Add task</span>
+            </button>
+          )}
+          {onAddExam && (
+            <button style={{ ...styles.inlineAddBtn, borderRight: "none" }} onClick={onAddExam}>
+              <Plus size={14} color="var(--rose-400)" />
+              <span style={styles.inlineAddText}>Add exam</span>
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -133,44 +153,49 @@ const styles = {
     flexDirection: "column",
   },
   sectionHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: "14px",
   },
   sectionTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    color: "#171717",
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "22px",
+    fontWeight: "400",
+    color: "var(--ink)",
   },
   controls: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "16px",
+    marginBottom: "4px",
   },
   segmented: {
     display: "flex",
-    background: "#f5f5f5",
-    borderRadius: "8px",
+    background: "var(--surface-3)",
+    borderRadius: "var(--r-sm)",
     padding: "3px",
     gap: "2px",
   },
   tab: {
-    padding: "7px 16px",
+    padding: "6px 14px",
     background: "transparent",
     border: "none",
     borderRadius: "6px",
     fontSize: "13px",
     fontWeight: "500",
-    color: "#737373",
+    color: "var(--ink-3)",
     cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   tabActive: {
-    background: "#ffffff",
-    color: "#171717",
+    background: "var(--surface)",
+    color: "var(--ink)",
     fontWeight: "600",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
   },
   tabOverdueActive: {
-    background: "#dc2626",
+    background: "var(--color-overdue)",
     color: "#ffffff",
     fontWeight: "600",
   },
@@ -181,22 +206,23 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "6px",
-    padding: "8px 14px",
-    background: "#fafafa",
-    border: "1px solid #f0f0f0",
-    borderRadius: "8px",
+    padding: "7px 12px",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-sm)",
     fontSize: "13px",
     fontWeight: "500",
-    color: "#525252",
+    color: "var(--ink-2)",
     cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   dropdown: {
     position: "absolute",
     top: "calc(100% + 6px)",
     right: 0,
-    background: "#ffffff",
-    border: "1px solid #f0f0f0",
-    borderRadius: "10px",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-md)",
     boxShadow: "0 4px 16px rgba(0,0,0,0.07)",
     overflow: "hidden",
     zIndex: 100,
@@ -210,24 +236,30 @@ const styles = {
     border: "none",
     fontSize: "13px",
     fontWeight: "500",
-    color: "#525252",
+    color: "var(--ink-2)",
     cursor: "pointer",
     textAlign: "left",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   dropdownItemActive: {
-    background: "#f8fafc",
-    color: "#171717",
+    background: "var(--surface-2)",
+    color: "var(--ink)",
     fontWeight: "600",
   },
   list: {
     display: "flex",
     flexDirection: "column",
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-lg)",
+    overflow: "hidden",
+    marginTop: "12px",
   },
   inlineEmpty: {
     padding: "24px 0",
     textAlign: "center",
     fontSize: "14px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
   },
   fullEmpty: {
     display: "flex",
@@ -236,20 +268,43 @@ const styles = {
     justifyContent: "center",
     padding: "56px 20px",
     gap: "10px",
-    background: "#fafafa",
-    borderRadius: "12px",
-    border: "1px solid #f0f0f0",
+    background: "var(--surface)",
+    borderRadius: "var(--r-lg)",
+    border: "1px solid var(--border)",
+    marginTop: "12px",
   },
   emptyTitle: {
     fontSize: "15px",
     fontWeight: "600",
-    color: "#525252",
+    color: "var(--ink-2)",
     margin: 0,
   },
   emptySub: {
     fontSize: "13px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
     margin: 0,
     textAlign: "center",
+  },
+  addRow: {
+    display: "flex",
+    gap: "0",
+    borderTop: "1px solid var(--border)",
+  },
+  inlineAddBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    flex: 1,
+    padding: "10px 16px",
+    background: "transparent",
+    border: "none",
+    borderRight: "1px solid var(--border)",
+    cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  inlineAddText: {
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "var(--ink-3)",
   },
 };

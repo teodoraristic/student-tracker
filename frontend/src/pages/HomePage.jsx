@@ -35,11 +35,11 @@ const formatDue = (raw) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = Math.ceil((date - today) / 86400000);
-  if (diff < 0) return { text: `${Math.abs(diff)}d overdue`, color: "#dc2626" };
-  if (diff === 0) return { text: "Due today", color: "#d97706" };
-  if (diff === 1) return { text: "Due tomorrow", color: "#d97706" };
-  if (diff <= 7) return { text: `${diff}d left`, color: "#2563eb" };
-  return { text: date.toLocaleDateString("en-GB", { day: "numeric", month: "short" }), color: "#737373" };
+  if (diff < 0) return { text: `${Math.abs(diff)}d overdue`, color: "var(--color-overdue)" };
+  if (diff === 0) return { text: "Due today", color: "var(--color-due-soon)" };
+  if (diff === 1) return { text: "Due tomorrow", color: "var(--color-due-soon)" };
+  if (diff <= 7) return { text: `${diff}d left`, color: "var(--color-future)" };
+  return { text: date.toLocaleDateString("en-GB", { day: "numeric", month: "short" }), color: "var(--ink-3)" };
 };
 
 // ── component ─────────────────────────────────────────────────────────────────
@@ -189,9 +189,9 @@ export default function HomePage() {
 
   // Priority chip colors for deadline cards
   const priorityChipColors = {
-    HIGH:   { bg: "#fee2e2", color: "#dc2626" },
-    MEDIUM: { bg: "#fef3c7", color: "#d97706" },
-    LOW:    { bg: "#f5f5f5", color: "#737373" },
+    HIGH:   { bg: "var(--color-overdue-bg)", color: "var(--color-overdue)" },
+    MEDIUM: { bg: "var(--color-due-soon-bg)", color: "var(--color-due-soon)" },
+    LOW:    { bg: "var(--surface-3)", color: "var(--ink-3)" },
   };
 
   // Upcoming deadlines — improved sorting
@@ -221,9 +221,26 @@ export default function HomePage() {
     return due && due.getMonth() === todayDate.getMonth() && due.getFullYear() === todayDate.getFullYear();
   });
 
-  const selectedLabel = selectedDate.toLocaleDateString("en-US", {
-    weekday: "long", month: "long", day: "numeric",
-  });
+
+
+  // Stat: Next Assignment
+  const nextAssignmentTask = tasks
+    .filter((t) => t.status !== "DONE" && t.dueDate)
+    .sort((a, b) => parseDateLocal(a.dueDate) - parseDateLocal(b.dueDate))[0];
+
+  const daysToNextAssignment = nextAssignmentTask
+    ? Math.ceil((parseDateLocal(nextAssignmentTask.dueDate) - todayDate) / 86400000)
+    : null;
+
+  const nextAssignmentSubjectName = nextAssignmentTask
+    ? (subjects.find((s) => s.id === nextAssignmentTask.subjectId)?.name ?? null)
+    : null;
+
+  // Stat: Subjects In Progress
+  const inProgressCount = subjects.filter((s) => s.status === "IN_PROGRESS").length;
+
+  // Stat: Tasks Left (uncompleted)
+  const tasksLeftCount = tasks.filter((t) => t.status !== "DONE").length;
 
   if (loading) {
     return (
@@ -236,29 +253,59 @@ export default function HomePage() {
   return (
     <div style={styles.container}>
 
-      {/* ── Day header ─────────────────────────────────────────────────── */}
+      {/* ── Header ─────────────────────────────────────────────────── */}
       <div style={styles.dayHeader}>
-        <h1 style={styles.dayTitle}>
-          {isSelectedToday ? "Today" : selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
-          <span style={styles.dayTitleDate}> — {selectedLabel}</span>
-        </h1>
+        <div>
+          <h1 style={styles.dayTitle}>
+            {todayDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+          </h1>
+          <p style={styles.dayGreeting}>
+            Good morning
+          </p>
+        </div>
+      </div>
+
+      {/* ── Stat cards ─────────────────────────────────────────────── */}
+      <div style={styles.statsRow}>
+        {/* Card 1 — Next Assignment */}
+        <div style={styles.statCard}>
+          <span style={{ ...styles.statNum, color: daysToNextAssignment !== null ? "var(--rose-400)" : "var(--ink)" }}>
+            {daysToNextAssignment !== null ? daysToNextAssignment : "—"}
+          </span>
+          <span style={styles.statLabel}>NEXT ASSIGNMENT - {nextAssignmentSubjectName && (
+            <span style={styles.statSub}>{nextAssignmentSubjectName}</span>
+          )}</span>
+          
+        </div>
+
+        {/* Card 2 — Tasks Left */}
+        <div style={styles.statCard}>
+          <span style={styles.statNum}>{tasksLeftCount}</span>
+          <span style={styles.statLabel}>TASKS LEFT</span>
+        </div>
+
+        {/* Card 3 — Subjects In Progress */}
+        <div style={styles.statCard}>
+          <span style={styles.statNum}>{inProgressCount}</span>
+          <span style={styles.statLabel}> SUBJECTS LEFT </span>
+        </div>
       </div>
 
       {/* ── 2-column layout ────────────────────────────────────────────── */}
       <div style={styles.columns}>
 
-        {/* LEFT COLUMN — Daily To-Do + Subjects ───────────────────────── */}
+        {/* LEFT COLUMN — Daily To-Do + AI ───────────────────────── */}
         <div style={styles.sideCol}>
 
           {/* Daily To-Do ──────────────────────────────────────────────── */}
           <div style={styles.column}>
             <div style={styles.colTitleRow}>
               <h2 style={styles.colTitle}>
-                <CheckSquare size={18} color="#f43f5e" />
-                Daily To-Do
+                <CheckSquare size={16} color="var(--rose-400)" />
+                Today
               </h2>
               <button style={styles.plannerBtn} onClick={() => navigate("/planner")}>
-                Planner <ArrowRight size={14} />
+                Planner <ArrowRight size={13} />
               </button>
             </div>
 
@@ -276,7 +323,7 @@ export default function HomePage() {
               </div>
             ) : plannedSubtasks.length === 0 ? (
               <div style={styles.emptyState}>
-                <CalendarX size={36} color="#d4d4d4" />
+                <CalendarX size={36} color="var(--ink-4)" />
                 <p style={styles.emptyText}>Nothing planned for today.</p>
                 <p style={styles.emptyHint}>Head to the Planner to schedule your study sessions.</p>
                 <p style={styles.emptyQuote}>"{emptyQuote}"</p>
@@ -285,7 +332,7 @@ export default function HomePage() {
               <div style={styles.todoList}>
                 {pendingToday.length === 0 && doneToday.length > 0 && (
                   <div style={styles.allDoneCard}>
-                    <Check size={15} color="#059669" style={{ flexShrink: 0 }} />
+                    <Check size={15} color="var(--color-done)" style={{ flexShrink: 0 }} />
                     <p style={styles.allDoneText}>{doneQuote}</p>
                   </div>
                 )}
@@ -341,18 +388,18 @@ export default function HomePage() {
           <div style={styles.column}>
             <div style={styles.colTitleRow}>
               <h2 style={styles.colTitle}>
-                <Clock size={18} color="#f43f5e" />
-                Upcoming Deadlines
+                <Clock size={16} color="var(--rose-400)" />
+                Coming up
                 <span style={styles.monthLabel}>in {currentMonthName}</span>
               </h2>
               <button style={styles.plannerBtn} onClick={() => navigate("/calendar")}>
-                Calendar <ArrowRight size={14} />
+                Calendar <ArrowRight size={13} />
               </button>
             </div>
 
             {currentMonthTasks.length === 0 ? (
               <div style={styles.emptyState}>
-                <Clock size={36} color="#d4d4d4" />
+                <Clock size={36} color="var(--ink-4)" />
                 <p style={styles.emptyText}>No assignments this month.</p>
               </div>
             ) : (
@@ -369,55 +416,53 @@ export default function HomePage() {
                   return (
                     <div key={task.id}>
                       <div
-                        style={styles.deadlineCard}
+                        style={styles.deadlineRow}
                         onClick={() => navigate(`/subjects/${task.subjectId}`)}
                       >
-                        <div style={styles.deadlineTop}>
+                        <div style={styles.deadlineLeft}>
                           <span style={styles.deadlineTitle}>{task.title}</span>
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                            {due && (
-                              <span style={{
-                                ...styles.dueBadge,
-                                color: due.color,
-                                border: `1px solid ${due.color}40`,
-                                background: due.color + "10",
-                              }}>
-                                {due.text}
-                              </span>
-                            )}
-                            <button
-                              style={{
-                                ...styles.sparkleBtn,
-                                ...(isExpanded ? styles.sparkleBtnActive : {}),
-                              }}
-                              onClick={(e) => handleBreakdown(e, task)}
-                              title="AI Task Breakdown"
-                            >
-                              <Sparkles size={13} />
-                            </button>
+                          <div style={styles.deadlineMeta}>
+                            {subject && <span style={styles.subjectChip}>{subject.name}</span>}
+                            {task.priority && (() => {
+                              const pc = priorityChipColors[task.priority] || priorityChipColors.LOW;
+                              return (
+                                <span style={{ ...styles.typeChip, background: pc.bg, color: pc.color }}>
+                                  {task.priority}
+                                </span>
+                              );
+                            })()}
                           </div>
-                        </div>
-
-                        <div style={styles.deadlineMeta}>
-                          {subject && <span style={styles.subjectChip}>{subject.name}</span>}
-                          {task.priority && (() => {
-                            const pc = priorityChipColors[task.priority] || priorityChipColors.LOW;
-                            return (
-                              <span style={{ ...styles.typeChip, background: pc.bg, color: pc.color }}>
-                                {task.priority}
-                              </span>
-                            );
-                          })()}
-                        </div>
-
-                        {totalSubs > 0 && (
-                          <div style={styles.subProgressRow}>
-                            <div style={styles.subProgressTrack}>
-                              <div style={{ ...styles.subProgressFill, width: `${subPct}%` }} />
+                          {totalSubs > 0 && (
+                            <div style={styles.subProgressRow}>
+                              <div style={styles.subProgressTrack}>
+                                <div style={{ ...styles.subProgressFill, width: `${subPct}%` }} />
+                              </div>
+                              <span style={styles.subProgressLabel}>{doneSubs}/{totalSubs} subtasks</span>
                             </div>
-                            <span style={styles.subProgressLabel}>{doneSubs}/{totalSubs} subtasks</span>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                        <div style={styles.deadlineRight}>
+                          {due && (
+                            <span style={{
+                              ...styles.dueBadge,
+                              color: due.color,
+                              border: `1px solid ${due.color}40`,
+                              background: due.color + "12",
+                            }}>
+                              {due.text}
+                            </span>
+                          )}
+                          <button
+                            style={{
+                              ...styles.sparkleBtn,
+                              ...(isExpanded ? styles.sparkleBtnActive : {}),
+                            }}
+                            onClick={(e) => handleBreakdown(e, task)}
+                            title="AI Task Breakdown"
+                          >
+                            <Sparkles size={12} />
+                          </button>
+                        </div>
                       </div>
 
                       {isExpanded && (
@@ -495,8 +540,8 @@ function SubtaskTodoItem({ subtask: s, onToggle, onReschedule, onRemove }) {
     <div style={{ ...itemStyles.card, ...(isDone ? itemStyles.cardDone : {}) }}>
       <button style={itemStyles.checkBtn} onClick={() => onToggle(s)}>
         {isDone
-          ? <CheckSquare size={19} color="#059669" />
-          : <Square size={19} color="#d4d4d4" />}
+          ? <CheckSquare size={18} color="var(--color-done)" />
+          : <Square size={18} color="var(--ink-4)" />}
       </button>
 
       <div style={itemStyles.body}>
@@ -547,7 +592,7 @@ function SubtaskTodoItem({ subtask: s, onToggle, onReschedule, onRemove }) {
             onClick={() => { setTempDate(""); setIsRescheduling(true); }}
             title="Reschedule"
           >
-            <Calendar size={14} />
+            <Calendar size={13} />
           </button>
         )}
         <button
@@ -555,7 +600,7 @@ function SubtaskTodoItem({ subtask: s, onToggle, onReschedule, onRemove }) {
           onClick={() => onRemove(s.id)}
           title="Remove from plan"
         >
-          <X size={14} />
+          <X size={13} />
         </button>
       </div>
     </div>
@@ -629,7 +674,7 @@ function AIAssistantWidget({ tasks, subjects }) {
     <div style={styles.column}>
       <div style={{ ...styles.colTitleRow, marginBottom: "16px" }}>
         <h2 style={{ ...styles.colTitle, color: "#7e22ce" }}>
-          <Sparkles size={18} color="#9333ea" />
+          <Sparkles size={16} color="#9333ea" />
           AI Assistant
         </h2>
       </div>
@@ -648,9 +693,9 @@ function AIAssistantWidget({ tasks, subjects }) {
               <div key={item.taskId} style={aiStyles.riskRow}>
                 <span style={{
                   ...aiStyles.riskBadge,
-                  background: isHigh ? "#fee2e2" : "#fef3c7",
-                  color: isHigh ? "#dc2626" : "#d97706",
-                  border: `1px solid ${isHigh ? "#fca5a5" : "#fcd34d"}`,
+                  background: isHigh ? "var(--color-overdue-bg)" : "var(--color-due-soon-bg)",
+                  color: isHigh ? "var(--color-overdue)" : "var(--color-due-soon)",
+                  border: `1px solid ${isHigh ? "var(--color-overdue)" : "var(--color-due-soon)"}30`,
                 }}>
                   {item.riskLevel}
                 </span>
@@ -735,8 +780,8 @@ function AIAssistantWidget({ tasks, subjects }) {
 
 // ── PomodoroWidget ────────────────────────────────────────────────────────────
 const POMODORO_MODES = {
-  work:  { label: "Focus",  minutes: 25, color: "#f43f5e" },
-  break: { label: "Break",  minutes: 5,  color: "#059669" },
+  work:  { label: "Focus",  minutes: 25, color: "var(--rose-400)" },
+  break: { label: "Break",  minutes: 5,  color: "var(--color-done)" },
 };
 
 function PomodoroWidget() {
@@ -781,11 +826,11 @@ function PomodoroWidget() {
     <div style={styles.column}>
       {/* header */}
       <div style={pomoStyles.header}>
-        <h2 style={{ ...styles.colTitle, color: cfg.color }}>
-          <Clock size={18} color={cfg.color} />
+        <h2 style={styles.colTitle}>
+          <Clock size={16} color="var(--rose-400)" />
           Focus Timer
         </h2>
-        <span style={{ ...pomoStyles.sessionBadge, background: cfg.color + "15", color: cfg.color }}>
+        <span style={pomoStyles.sessionBadge}>
           {sessions} session{sessions !== 1 ? "s" : ""}
         </span>
       </div>
@@ -797,7 +842,7 @@ function PomodoroWidget() {
             key={key}
             style={{
               ...pomoStyles.tab,
-              ...(mode === key ? { ...pomoStyles.tabActive, background: m.color + "15", color: m.color, borderColor: m.color + "40" } : {}),
+              ...(mode === key ? { background: "var(--rose-50)", color: "var(--rose-500)", borderColor: "var(--rose-100)" } : {}),
             }}
             onClick={() => switchMode(key)}
           >
@@ -809,10 +854,10 @@ function PomodoroWidget() {
       {/* ring + time */}
       <div style={pomoStyles.ringWrap}>
         <svg width="120" height="120" style={{ transform: "rotate(-90deg)" }}>
-          <circle cx="60" cy="60" r="52" fill="none" stroke="#f0f0f0" strokeWidth="7" />
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" strokeWidth="7" />
           <circle
             cx="60" cy="60" r="52" fill="none"
-            stroke={cfg.color} strokeWidth="7"
+            stroke="var(--rose-400)" strokeWidth="7"
             strokeLinecap="round"
             strokeDasharray={`${2 * Math.PI * 52}`}
             strokeDashoffset={`${2 * Math.PI * 52 * (1 - pct / 100)}`}
@@ -820,17 +865,17 @@ function PomodoroWidget() {
           />
         </svg>
         <div style={pomoStyles.timeOverlay}>
-          <span style={{ ...pomoStyles.timeText, color: cfg.color }}>{mins}:{secs}</span>
+          <span style={pomoStyles.timeText}>{mins}:{secs}</span>
         </div>
       </div>
 
       {/* controls */}
       <div style={pomoStyles.controls}>
-        <button style={{ ...pomoStyles.resetBtn }} onClick={reset} title="Reset">
+        <button style={pomoStyles.resetBtn} onClick={reset} title="Reset">
           <RotateCcw size={15} />
         </button>
         <button
-          style={{ ...pomoStyles.playBtn, background: cfg.color }}
+          style={pomoStyles.playBtn}
           onClick={() => setRunning((r) => !r)}
         >
           {running ? <Pause size={18} /> : <Play size={18} />}
@@ -845,90 +890,168 @@ function PomodoroWidget() {
 const styles = {
   container: { width: "100%", maxWidth: "1400px", margin: "0 auto" },
   centered: { display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" },
-  loadingText: { fontSize: "15px", color: "#a3a3a3" },
+  loadingText: { fontSize: "15px", color: "var(--ink-3)" },
 
-  greetingBar: {
-    marginBottom: "24px", padding: "14px 20px",
-    background: "#ffffff", border: "1px solid #e5e5e5", borderRadius: "14px",
+  dayHeader: {
+    display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+    marginBottom: "24px",
   },
-  greetingQuote: {
-    margin: 0, fontSize: "14px", fontStyle: "italic", color: "#737373", textAlign: "center",
+  dayTitle: {
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "28px", fontWeight: "400", color: "var(--ink)", margin: "0 0 4px 0",
+  },
+  dayGreeting: {
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "22px", fontWeight: "400", fontStyle: "italic",
+    color: "var(--ink-3)", margin: 0,
+  },
+  examBadge: {
+    padding: "6px 14px",
+    background: "var(--rose-50)",
+    color: "var(--rose-400)",
+    border: "1px solid var(--rose-100)",
+    borderRadius: "99px",
+    fontSize: "12px",
+    fontWeight: "600",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
   },
 
-  dayHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" },
-  dayTitle: { fontSize: "26px", fontWeight: "700", color: "#171717", margin: "0 0 4px 0" },
-  dayTitleDate: { fontWeight: "400", color: "#737373", fontSize: "20px" },
-  daySubtitle: { fontSize: "14px", color: "#a3a3a3", margin: 0 },
-  progressPill: { display: "flex", alignItems: "center", gap: "10px", background: "#fff", border: "1px solid #e5e5e5", borderRadius: "12px", padding: "10px 16px" },
-  progressTrack: { width: "140px", height: "8px", background: "#f5f5f5", borderRadius: "4px", overflow: "hidden" },
-  progressFill: { height: "100%", background: "linear-gradient(90deg, #f43f5e, #fb7185)", borderRadius: "4px", transition: "width 0.3s ease" },
-  progressPct: { fontSize: "14px", fontWeight: "700", color: "#f43f5e", minWidth: "36px", textAlign: "right" },
+  statsRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "12px",
+    marginBottom: "24px",
+  },
+  statCard: {
+    background: "var(--surface-2)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-md)",
+    padding: "16px 20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  statNum: {
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "24px",
+    fontWeight: "400",
+    color: "var(--ink)",
+    lineHeight: 1,
+  },
+  statLabel: {
+    fontSize: "10px",
+    fontWeight: "600",
+    color: "var(--ink-3)",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  statSub: {
+    fontSize: "11px",
+    color: "var(--ink-3)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    marginTop: "2px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
 
   columns: { display: "flex", gap: "14px", alignItems: "flex-start" },
   sideCol: { display: "flex", flexDirection: "column", gap: "14px", flex: 1, minWidth: 0 },
-  column: { background: "#ffffff", border: "1px solid #e5e5e5", borderRadius: "16px", padding: "14px", height: "fit-content" },
-  colTitle: { display: "flex", alignItems: "center", gap: "10px", fontSize: "17px", fontWeight: "700", color: "#171717", margin: 0 },
+  column: {
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-lg)",
+    padding: "16px",
+    height: "fit-content",
+  },
+  colTitle: {
+    display: "flex", alignItems: "center", gap: "8px",
+    fontSize: "15px", fontWeight: "600", color: "var(--ink)", margin: 0,
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
 
   warningCard: {
     display: "flex", alignItems: "center", gap: "8px",
-    padding: "10px 14px", background: "#fffbeb", border: "1px solid #fde68a",
-    borderRadius: "10px", fontSize: "13px", fontWeight: "500", color: "#92400e",
+    padding: "10px 14px", background: "var(--color-due-soon-bg)", border: "1px solid var(--color-due-soon)30",
+    borderRadius: "var(--r-md)", fontSize: "13px", fontWeight: "500", color: "var(--color-due-soon)",
     marginBottom: "16px",
   },
 
-  emptyState: { display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", padding: "20px 16px", textAlign: "center" },
-  emptyText: { fontSize: "14px", color: "#a3a3a3", margin: 0, fontWeight: "500" },
-  emptyHint: { fontSize: "13px", color: "#c3c3c3", margin: 0, lineHeight: 1.5, maxWidth: "240px" },
-  emptyQuote: { fontSize: "12px", fontStyle: "italic", color: "#d4d4d4", margin: "4px 0 0", maxWidth: "260px", lineHeight: 1.5, textAlign: "center" },
+  emptyState: { display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", padding: "20px 16px", textAlign: "center" },
+  emptyText: { fontSize: "14px", color: "var(--ink-3)", margin: 0, fontWeight: "500" },
+  emptyHint: { fontSize: "13px", color: "var(--ink-4)", margin: 0, lineHeight: 1.5, maxWidth: "240px" },
+  emptyQuote: { fontSize: "12px", fontStyle: "italic", color: "var(--ink-4)", margin: "4px 0 0", maxWidth: "260px", lineHeight: 1.5, textAlign: "center" },
 
   allDoneCard: {
     display: "flex", alignItems: "center", gap: "8px",
-    padding: "10px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0",
-    borderRadius: "10px", marginBottom: "4px",
+    padding: "10px 14px", background: "var(--color-done-bg)", border: "1px solid var(--color-done)30",
+    borderRadius: "var(--r-md)", marginBottom: "4px",
   },
-  allDoneText: { fontSize: "13px", color: "#166534", margin: 0, fontStyle: "italic", fontWeight: "500" },
+  allDoneText: { fontSize: "13px", color: "var(--color-done)", margin: 0, fontStyle: "italic", fontWeight: "500" },
 
-  todoList: { display: "flex", flexDirection: "column", gap: "8px" },
+  todoList: { display: "flex", flexDirection: "column", gap: "1px" },
   doneSeparatorBtn: {
     display: "flex", justifyContent: "space-between", alignItems: "center",
     width: "100%", padding: "10px 0 4px", background: "transparent", border: "none",
-    borderTop: "1px solid #f5f5f5", marginTop: "4px", cursor: "pointer",
-    fontSize: "11px", fontWeight: "600", color: "#a3a3a3",
-    textTransform: "uppercase", letterSpacing: "0.6px",
+    borderTop: "1px solid var(--border)", marginTop: "4px", cursor: "pointer",
+    fontSize: "11px", fontWeight: "600", color: "var(--ink-4)",
+    textTransform: "uppercase", letterSpacing: "0.06em",
   },
 
-  deadlineList: { display: "flex", flexDirection: "column", gap: "8px" },
-  deadlineCard: { padding: "10px 12px", background: "#fafafa", border: "1px solid #f0f0f0", borderRadius: "12px", cursor: "pointer" },
-  deadlineTop: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "6px" },
-  deadlineTitle: { fontSize: "13px", fontWeight: "600", color: "#171717", flex: 1, lineHeight: 1.3 },
-  dueBadge: { fontSize: "12px", fontWeight: "700", padding: "3px 9px", borderRadius: "20px", flexShrink: 0, whiteSpace: "nowrap" },
-  deadlineMeta: { display: "flex", gap: "6px", alignItems: "center", marginBottom: "6px" },
-  subjectChip: { fontSize: "11px", fontWeight: "500", padding: "2px 8px", borderRadius: "5px", background: "#fff1f2", color: "#f43f5e" },
-  typeChip: { fontSize: "11px", fontWeight: "700", padding: "2px 9px", borderRadius: "20px", textTransform: "uppercase", letterSpacing: "0.4px" },
-  subProgressRow: { display: "flex", alignItems: "center", gap: "8px" },
-  subProgressTrack: { flex: 1, height: "5px", background: "#e5e5e5", borderRadius: "3px", overflow: "hidden" },
-  subProgressFill: { height: "100%", background: "#f43f5e", borderRadius: "3px", transition: "width 0.3s ease" },
-  subProgressLabel: { fontSize: "12px", color: "#a3a3a3", fontWeight: "500", whiteSpace: "nowrap" },
+  deadlineList: { display: "flex", flexDirection: "column", gap: "0" },
+  deadlineRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "10px",
+    padding: "10px 0",
+    borderBottom: "1px solid var(--border)",
+    cursor: "pointer",
+  },
+  deadlineLeft: { display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 },
+  deadlineRight: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 },
+  deadlineTitle: { fontSize: "13px", fontWeight: "500", color: "var(--ink)", lineHeight: 1.3 },
+  dueBadge: {
+    fontSize: "11px", fontWeight: "600", padding: "2px 8px", borderRadius: "99px",
+    flexShrink: 0, whiteSpace: "nowrap",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  deadlineMeta: { display: "flex", gap: "5px", alignItems: "center" },
+  subjectChip: {
+    fontSize: "11px", fontWeight: "500", padding: "1px 7px", borderRadius: "99px",
+    background: "var(--rose-50)", color: "var(--rose-500)",
+  },
+  typeChip: {
+    fontSize: "11px", fontWeight: "600", padding: "1px 7px", borderRadius: "99px",
+    textTransform: "uppercase", letterSpacing: "0.04em",
+  },
+  subProgressRow: { display: "flex", alignItems: "center", gap: "6px" },
+  subProgressTrack: { flex: 1, height: "4px", background: "var(--border)", borderRadius: "99px", overflow: "hidden" },
+  subProgressFill: { height: "100%", background: "var(--rose-400)", borderRadius: "99px", transition: "width 0.3s ease" },
+  subProgressLabel: { fontSize: "11px", color: "var(--ink-3)", fontWeight: "500", whiteSpace: "nowrap" },
 
-  colTitleRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
-  monthLabel: { fontSize: "13px", fontWeight: "400", color: "#a3a3a3", marginLeft: "2px" },
+  colTitleRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" },
+  monthLabel: { fontSize: "13px", fontWeight: "400", color: "var(--ink-3)", marginLeft: "4px" },
   plannerBtn: {
-    display: "flex", alignItems: "center", gap: "5px",
+    display: "flex", alignItems: "center", gap: "4px",
     background: "transparent", border: "none", cursor: "pointer",
-    fontSize: "13px", fontWeight: "500", color: "#f43f5e", padding: 0,
+    fontSize: "12px", fontWeight: "500", color: "var(--rose-400)", padding: 0,
   },
 
   expandBtn: {
-    display: "flex", alignItems: "center", gap: "5px", marginTop: "10px",
-    background: "transparent", border: "none", color: "#a3a3a3",
+    display: "flex", alignItems: "center", gap: "5px", marginTop: "8px",
+    background: "transparent", border: "none", color: "var(--ink-3)",
     fontSize: "13px", fontWeight: "500", cursor: "pointer", padding: "4px 0",
   },
 
   sparkleBtn: {
     display: "flex", alignItems: "center", justifyContent: "center",
-    width: "26px", height: "26px", flexShrink: 0,
-    background: "transparent", border: "1px solid #e5e5e5",
-    borderRadius: "7px", color: "#a3a3a3", cursor: "pointer", padding: 0,
+    width: "24px", height: "24px", flexShrink: 0,
+    background: "transparent", border: "1px solid var(--border)",
+    borderRadius: "var(--r-sm)", color: "var(--ink-3)", cursor: "pointer", padding: 0,
   },
   sparkleBtnActive: {
     background: "#fdf4ff", border: "1px solid #e9d5ff", color: "#9333ea",
@@ -936,7 +1059,7 @@ const styles = {
 
   breakdownPanel: {
     background: "#fdf4ff", border: "1px solid #e9d5ff",
-    borderRadius: "10px", padding: "12px 14px", marginTop: "4px",
+    borderRadius: "var(--r-md)", padding: "12px 14px", marginTop: "4px",
   },
   breakdownHeader: {
     display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px",
@@ -946,7 +1069,7 @@ const styles = {
   },
   breakdownClose: {
     background: "transparent", border: "none", cursor: "pointer",
-    color: "#a3a3a3", padding: 0, display: "flex",
+    color: "var(--ink-3)", padding: 0, display: "flex",
   },
   breakdownLoading: {
     fontSize: "13px", color: "#a855f7", margin: 0, fontStyle: "italic",
@@ -967,97 +1090,121 @@ const styles = {
   },
   breakdownAdded: {
     display: "flex", alignItems: "center", gap: "3px",
-    fontSize: "11px", fontWeight: "600", color: "#059669", whiteSpace: "nowrap",
+    fontSize: "11px", fontWeight: "600", color: "var(--color-done)", whiteSpace: "nowrap",
   },
 };
 
 const itemStyles = {
-  card: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 14px", background: "#fafafa", border: "1px solid #f0f0f0", borderRadius: "12px" },
+  card: {
+    display: "flex", alignItems: "flex-start", gap: "10px",
+    padding: "10px 0",
+    borderBottom: "1px solid var(--border)",
+  },
   cardDone: { opacity: 0.5 },
   checkBtn: { background: "transparent", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", flexShrink: 0, marginTop: "1px" },
   body: { flex: 1, minWidth: 0 },
-  title: { display: "block", fontSize: "14px", fontWeight: "600", color: "#171717", marginBottom: "4px", wordBreak: "break-word" },
-  titleDone: { textDecoration: "line-through", color: "#a3a3a3" },
+  title: { display: "block", fontSize: "14px", fontWeight: "500", color: "var(--ink)", marginBottom: "3px", wordBreak: "break-word" },
+  titleDone: { textDecoration: "line-through", color: "var(--ink-3)" },
   meta: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" },
-  taskName: { fontSize: "12px", color: "#737373", fontWeight: "500" },
-  subjectBadge: { fontSize: "11px", fontWeight: "500", padding: "1px 7px", borderRadius: "4px", background: "#fff1f2", color: "#f43f5e" },
+  taskName: { fontSize: "12px", color: "var(--ink-3)", fontWeight: "500" },
+  subjectBadge: { fontSize: "11px", fontWeight: "500", padding: "1px 7px", borderRadius: "99px", background: "var(--rose-50)", color: "var(--rose-500)" },
   dueMini: { fontSize: "11px", fontWeight: "500" },
   actions: { display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 },
-  actionBtn: { display: "flex", alignItems: "center", justifyContent: "center", width: "28px", height: "28px", background: "transparent", border: "1px solid #e5e5e5", borderRadius: "7px", color: "#a3a3a3", cursor: "pointer", padding: 0 },
-  removeBtn: { border: "1px solid #fde8e8", color: "#fca5a5" },
-  confirmBtn: { background: "#f0fdf4", border: "1px solid #86efac", color: "#16a34a" },
-  dateInput: { fontSize: "12px", border: "1px solid #e5e5e5", borderRadius: "7px", padding: "4px 8px", fontFamily: "inherit", outline: "none", width: "120px" },
+  actionBtn: {
+    display: "flex", alignItems: "center", justifyContent: "center",
+    width: "26px", height: "26px", background: "transparent",
+    border: "1px solid var(--border)", borderRadius: "var(--r-sm)",
+    color: "var(--ink-3)", cursor: "pointer", padding: 0,
+  },
+  removeBtn: { borderColor: "var(--color-overdue)30", color: "var(--color-overdue)" },
+  confirmBtn: { background: "var(--color-done-bg)", borderColor: "var(--color-done)30", color: "var(--color-done)" },
+  dateInput: {
+    fontSize: "12px", border: "1px solid var(--border)", borderRadius: "var(--r-sm)",
+    padding: "3px 6px", fontFamily: "inherit", outline: "none", width: "120px",
+  },
 };
 
 const pomoStyles = {
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" },
-  sessionBadge: { fontSize: "12px", fontWeight: "600", padding: "3px 10px", borderRadius: "20px" },
+  sessionBadge: {
+    fontSize: "11px", fontWeight: "600", padding: "3px 10px", borderRadius: "99px",
+    background: "var(--rose-50)", color: "var(--rose-400)",
+  },
   tabs: { display: "flex", gap: "8px", marginBottom: "20px" },
   tab: {
     flex: 1, padding: "7px 0", fontSize: "12px", fontWeight: "600",
-    background: "#fafafa", border: "1px solid #e5e5e5", borderRadius: "8px",
-    color: "#a3a3a3", cursor: "pointer",
+    background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: "var(--r-sm)",
+    color: "var(--ink-3)", cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
-  tabActive: { fontWeight: "700" },
   ringWrap: { position: "relative", width: "120px", height: "120px", margin: "0 auto 20px" },
   timeOverlay: {
     position: "absolute", inset: 0,
     display: "flex", alignItems: "center", justifyContent: "center",
   },
-  timeText: { fontSize: "26px", fontWeight: "700", letterSpacing: "1px", fontVariantNumeric: "tabular-nums" },
+  timeText: {
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "26px", fontWeight: "400", letterSpacing: "1px",
+    color: "var(--rose-400)",
+    fontVariantNumeric: "tabular-nums",
+  },
   controls: { display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" },
   resetBtn: {
     display: "flex", alignItems: "center", justifyContent: "center",
     width: "36px", height: "36px", background: "transparent",
-    border: "1px solid #e5e5e5", borderRadius: "10px",
-    color: "#a3a3a3", cursor: "pointer",
+    border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+    color: "var(--ink-3)", cursor: "pointer",
   },
   playBtn: {
     display: "flex", alignItems: "center", gap: "7px",
-    padding: "9px 22px", border: "none", borderRadius: "10px",
-    color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer",
+    padding: "9px 22px", border: "none", borderRadius: "var(--r-md)",
+    background: "var(--rose-400)",
+    color: "#fff", fontSize: "13px", fontWeight: "500", cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 };
 
 const aiStyles = {
   sectionLabel: {
-    fontSize: "10px", fontWeight: "700", textTransform: "uppercase",
-    letterSpacing: "0.8px", color: "#a3a3a3", margin: "0 0 10px 0",
+    fontSize: "11px", fontWeight: "600", textTransform: "uppercase",
+    letterSpacing: "0.06em", color: "var(--ink-3)", margin: "0 0 10px 0",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
-  hint: { fontSize: "13px", color: "#a3a3a3", margin: 0, fontStyle: "italic" },
+  hint: { fontSize: "13px", color: "var(--ink-3)", margin: 0, fontStyle: "italic" },
   riskList: { display: "flex", flexDirection: "column", gap: "8px" },
   riskRow: { display: "flex", alignItems: "flex-start", gap: "8px" },
   riskBadge: {
     fontSize: "10px", fontWeight: "700", padding: "2px 7px",
-    borderRadius: "20px", textTransform: "uppercase", letterSpacing: "0.5px",
+    borderRadius: "99px", textTransform: "uppercase", letterSpacing: "0.5px",
     flexShrink: 0, marginTop: "2px",
   },
   riskInfo: { display: "flex", flexDirection: "column", gap: "1px" },
-  riskTitle: { fontSize: "13px", fontWeight: "600", color: "#171717" },
-  riskSubject: { fontSize: "11px", color: "#f43f5e", fontWeight: "500" },
-  riskReason: { fontSize: "12px", color: "#737373", fontStyle: "italic" },
-  divider: { height: "1px", background: "#f0f0f0", margin: "14px 0" },
+  riskTitle: { fontSize: "13px", fontWeight: "600", color: "var(--ink)" },
+  riskSubject: { fontSize: "11px", color: "var(--rose-500)", fontWeight: "500" },
+  riskReason: { fontSize: "12px", color: "var(--ink-3)", fontStyle: "italic" },
+  divider: { height: "1px", background: "var(--border)", margin: "14px 0" },
   select: {
     width: "100%", padding: "8px 10px", fontSize: "13px",
-    border: "1px solid #e5e5e5", borderRadius: "8px", fontFamily: "inherit",
-    outline: "none", background: "#fafafa", marginBottom: "8px",
-    color: "#171717", cursor: "pointer", boxSizing: "border-box",
+    border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    outline: "none", background: "var(--surface-2)", marginBottom: "8px",
+    color: "var(--ink)", cursor: "pointer", boxSizing: "border-box",
   },
   generateBtn: {
     width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
     padding: "9px 0", background: "linear-gradient(135deg, #9333ea, #7e22ce)",
-    color: "#fff", border: "none", borderRadius: "9px",
-    fontSize: "13px", fontWeight: "700", marginBottom: "10px",
+    color: "#fff", border: "none", borderRadius: "var(--r-md)",
+    fontSize: "13px", fontWeight: "600", marginBottom: "10px",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   breakdownList: { display: "flex", flexDirection: "column", gap: "7px" },
   breakdownRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" },
   breakdownText: { fontSize: "13px", color: "#3b0764", flex: 1, lineHeight: 1.4 },
   descTextarea: {
     width: "100%", padding: "8px 10px", fontSize: "13px",
-    border: "1px solid #e5e5e5", borderRadius: "8px", fontFamily: "inherit",
-    outline: "none", background: "#fafafa", color: "#171717",
+    border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    outline: "none", background: "var(--surface-2)", color: "var(--ink)",
     resize: "vertical", boxSizing: "border-box",
   },
 };
-
-

@@ -17,7 +17,7 @@ export default function SubtaskForm({ onSubmit, onCancel, initialData = null }) 
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     style={styles.input}
-                    placeholder="e.g. Study chapters 1-3"
+                    placeholder="e.g. Study chapters 1–3"
                     required
                     autoFocus
                 />
@@ -39,54 +39,55 @@ const styles = {
     form: {
         display: "flex",
         flexDirection: "column",
-        gap: "24px",
+        gap: "20px",
     },
     field: {
         display: "flex",
         flexDirection: "column",
-        gap: "8px",
+        gap: "6px",
     },
     label: {
-        fontSize: "14px",
+        fontSize: "13px",
         fontWeight: "600",
-        color: "#171717",
+        color: "var(--ink)",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
     },
     input: {
-        padding: "12px 14px",
-        fontSize: "15px",
-        border: "1px solid #e5e5e5",
-        borderRadius: "10px",
-        fontFamily: "inherit",
-        transition: "all 0.2s ease",
+        padding: "10px 12px",
+        fontSize: "13px",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--r-md)",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+        transition: "border-color 0.15s ease",
         outline: "none",
+        color: "var(--ink)",
+        background: "var(--surface)",
     },
     buttons: {
         display: "flex",
-        gap: "12px",
+        gap: "10px",
         justifyContent: "flex-end",
-        marginTop: "10px",
     },
     cancelBtn: {
-        padding: "10px 20px",
-        backgroundColor: "#f5f5f5",
-        color: "#171717",
-        border: "1px solid #e5e5e5",
-        borderRadius: "10px",
+        padding: "8px 18px",
+        backgroundColor: "var(--surface-3)",
+        color: "var(--ink)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--r-md)",
         cursor: "pointer",
-        fontSize: "15px",
+        fontSize: "13px",
         fontWeight: "500",
-        transition: "all 0.2s ease",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
     },
     submitBtn: {
-        padding: "10px 20px",
-        backgroundColor: "#f43f5e",
+        padding: "8px 18px",
+        backgroundColor: "var(--rose-400)",
         color: "white",
         border: "none",
-        borderRadius: "10px",
+        borderRadius: "var(--r-md)",
         cursor: "pointer",
-        fontSize: "15px",
-        fontWeight: "600",
-        transition: "all 0.2s ease",
-        boxShadow: "0 2px 8px rgba(244, 63, 94, 0.2)",
+        fontSize: "13px",
+        fontWeight: "500",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
     },
 };

@@ -1,6 +1,5 @@
 package com.studenttracker.backend.dto;
 
-import com.studenttracker.backend.model.Difficulty;
 import com.studenttracker.backend.model.SubjectStatus;
 import java.time.LocalDate;
 
@@ -9,7 +8,7 @@ public class SubjectDTO {
     private Long id;
     private String name;
     private String website;
-    private Difficulty difficulty;
+    private String color;
     private int totalTasks;
     private int completedTasks;
     private SubjectStatus status;
@@ -17,6 +16,8 @@ public class SubjectDTO {
     private Integer manualGradeOverride;
     private LocalDate passedAt;
     private int totalPoints;
+    private Long semesterId;
+    private String semesterName;
 
     public SubjectDTO() {}
 
@@ -29,8 +30,8 @@ public class SubjectDTO {
     public String getWebsite() { return website; }
     public void setWebsite(String website) { this.website = website; }
 
-    public Difficulty getDifficulty() { return difficulty; }
-    public void setDifficulty(Difficulty difficulty) { this.difficulty = difficulty; }
+    public String getColor() { return color; }
+    public void setColor(String color) { this.color = color; }
 
     public int getTotalTasks() { return totalTasks; }
     public void setTotalTasks(int totalTasks) { this.totalTasks = totalTasks; }
@@ -52,4 +53,10 @@ public class SubjectDTO {
 
     public int getTotalPoints() { return totalPoints; }
     public void setTotalPoints(int totalPoints) { this.totalPoints = totalPoints; }
+
+    public Long getSemesterId() { return semesterId; }
+    public void setSemesterId(Long semesterId) { this.semesterId = semesterId; }
+
+    public String getSemesterName() { return semesterName; }
+    public void setSemesterName(String semesterName) { this.semesterName = semesterName; }
 }

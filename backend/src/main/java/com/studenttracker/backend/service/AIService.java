@@ -164,8 +164,7 @@ public class AIService {
                     t.getId(),
                     t.getTitle(),
                     subjectNames.getOrDefault(t.getSubjectId(), "Unknown"),
-                    t.getDueDate() != null ? t.getDueDate().toString() : "no deadline",
-                    t.getPriority()
+                    t.getDueDate() != null ? t.getDueDate().toString() : "no deadline"
             ));
         }
 

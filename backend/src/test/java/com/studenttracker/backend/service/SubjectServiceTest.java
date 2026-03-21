@@ -19,7 +19,6 @@ import com.studenttracker.backend.dto.request.FinalizeSubjectRequest;
 import com.studenttracker.backend.exception.ConflictException;
 import com.studenttracker.backend.exception.ForbiddenException;
 import com.studenttracker.backend.exception.NotFoundException;
-import com.studenttracker.backend.model.Difficulty;
 import com.studenttracker.backend.model.Subject;
 import com.studenttracker.backend.model.SubjectStatus;
 import com.studenttracker.backend.model.Task;
@@ -59,7 +58,6 @@ class SubjectServiceTest {
 
         CreateSubjectRequest request = mock(CreateSubjectRequest.class);
         when(request.getName()).thenReturn("Mathematics");
-        when(request.getDifficulty()).thenReturn(Difficulty.MEDIUM);
 
         when(subjectRepository.existsByNameAndUser("Mathematics", user)).thenReturn(false);
         when(subjectRepository.save(any(Subject.class))).thenAnswer(inv -> {
@@ -71,7 +69,6 @@ class SubjectServiceTest {
         SubjectDTO dto = subjectService.create(request, user);
 
         assertThat(dto.getName()).isEqualTo("Mathematics");
-        assertThat(dto.getDifficulty()).isEqualTo(Difficulty.MEDIUM);
     }
 
     @Test

@@ -9,6 +9,7 @@ import SubjectDetailsPage from "./pages/SubjectDetailsPage";
 import CalendarPage from "./pages/CalendarPage";
 import WeeklyPlannerPage from "./pages/WeeklyPlannerPage";
 import StudyRoomPage from "./pages/StudyRoomPage";
+import ProfilePage from "./pages/ProfilePage";
 
 import Layout from "./components/layout/Layout";
 
@@ -52,6 +53,7 @@ function App() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/planner" element={<WeeklyPlannerPage />} />
           <Route path="/study" element={<StudyRoomPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
       </Routes>

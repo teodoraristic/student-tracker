@@ -1,0 +1,105 @@
+:root {
+  --rose-50:  #fff0f3;
+  --rose-100: #ffd6de;
+  --rose-200: #ffadbf;
+  --rose-300: #ff85a1;
+  --rose-400: #f4607e;
+  --rose-500: #e63d62;
+  --rose-600: #c42a50;
+  --rose-700: #9a1d3d;
+
+  --ink:      #1a1523;
+  --ink-2:    #4a3f52;
+  --ink-3:    #8a7e92;
+  --ink-4:    #c4bdc8;
+
+  --surface:   #ffffff;
+  --surface-2: #f9f7fa;
+  --surface-3: #f2eff4;
+
+  --border:   #e8e4ec;
+  --border-2: #d4cedd;
+
+  --color-done:       #0a7c5c;
+  --color-done-bg:    #e8f7f2;
+  --color-due-soon:   #b45309;
+  --color-due-soon-bg:#fef3e0;
+  --color-overdue:    #c0392b;
+  --color-overdue-bg: #fdecea;
+  --color-future:     #1a5fb4;
+  --color-future-bg:  #eaf1fc;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+}
+
+[data-theme="dark"] {
+  --ink:      #f0ecf5;
+  --ink-2:    #c4bdc8;
+  --ink-3:    #8a7e92;
+  --ink-4:    #4a3f52;
+  --surface:   #1a1523;
+  --surface-2: #221b2e;
+  --surface-3: #2c2340;
+  --border:   #3a2e4a;
+  --border-2: #4e4060;
+  --color-done:       #34d399;
+  --color-done-bg:    #0a3025;
+  --color-due-soon:   #fbbf24;
+  --color-due-soon-bg:#2d1e00;
+  --color-overdue:    #f87171;
+  --color-overdue-bg: #2d0f0f;
+  --color-future:     #60a5fa;
+  --color-future-bg:  #0d1e3a;
+  --rose-50:  #2d0f1a;
+  --rose-100: #5c1f35;
+  --rose-500: #ff7a96;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--surface-3);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  width: 100%;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-4);
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--rose-400);
+  outline-offset: 2px;
+}
+
+a {
+  color: inherit;
+}

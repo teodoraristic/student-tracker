@@ -1,24 +1,11 @@
-import { ExternalLink, Trash2, Plus } from "lucide-react";
-import Badge from "../ui/Badge";
-import Button from "../ui/Button";
+import { ExternalLink, Pencil } from "lucide-react";
 import ProgressRing from "../ui/ProgressRing";
-
-const difficultyTint = {
-  EASY:   "#f0fdf4",
-  MEDIUM: "#fffbeb",
-  HARD:   "#fff5f5",
-};
-
-const difficultyColors = {
-  EASY:   { bg: "#d1fae5", text: "#059669", border: "#6ee7b7" },
-  MEDIUM: { bg: "#fef3c7", text: "#d97706", border: "#fcd34d" },
-  HARD:   { bg: "#fee2e2", text: "#dc2626", border: "#fca5a5" },
-};
+import { SUBJECT_COLORS } from "../../utils/subjectColors";
 
 const statusConfig = {
-  PASSED:      { label: "Passed",      bg: "#d1fae5", color: "#059669", border: "#6ee7b7" },
-  FAILED:      { label: "Failed",      bg: "#fee2e2", color: "#dc2626", border: "#fca5a5" },
-  IN_PROGRESS: { label: "In Progress", bg: "#eff6ff", color: "#3b82f6", border: "#93c5fd" },
+  PASSED:      { label: "Passed",      bg: "var(--color-done-bg)", color: "var(--color-done)", border: "var(--color-done)40" },
+  FAILED:      { label: "Failed",      bg: "var(--color-overdue-bg)", color: "var(--color-overdue)", border: "var(--color-overdue)40" },
+  IN_PROGRESS: { label: "In Progress", bg: "var(--color-future-bg)", color: "var(--color-future)", border: "var(--color-future)40" },
 };
 
 const calcGrade = (pts) => {
@@ -32,8 +19,9 @@ const calcGrade = (pts) => {
 
 export default function SubjectHero({
   subject,
-  onAddTask,
-  onDeleteSubject,
+  onEditSubject,
+  onFinalize,
+  onReset,
   completionPct,
   todoTasks,
   overdueTasks,
@@ -41,30 +29,35 @@ export default function SubjectHero({
   earnedPoints,
   totalPoints,
 }) {
-  const tint = difficultyTint[subject.difficulty] || "#fafafa";
-  const dc = difficultyColors[subject.difficulty] || difficultyColors.MEDIUM;
   const sc = statusConfig[subject.status] || statusConfig.IN_PROGRESS;
   const pointsPct = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
   const isPassed = subject.status === "PASSED";
+  const isFinalized = subject.status === "PASSED" || subject.status === "FAILED";
   const isAllDone = todoTasks === 0 && overdueTasks === 0 && completedTasks > 0;
+  const accentColor = subject.color || SUBJECT_COLORS[(subject.id || 0) % SUBJECT_COLORS.length];
 
   return (
-    <div style={{ ...styles.hero, background: tint }}>
+    <div style={{ ...styles.hero }}>
+      <div style={{ ...styles.accentBar, background: accentColor }} />
       <div style={styles.columns}>
 
         {/* Col 1 — Subject info */}
         <div style={styles.colInfo}>
           <div style={styles.badgeRow}>
-            <Badge style={{ background: dc.bg, color: dc.text, border: `1px solid ${dc.border}` }}>
-              {subject.difficulty}
-            </Badge>
             <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
               {subject.status === "PASSED" && subject.finalGrade
                 ? `Passed · ${subject.finalGrade}`
                 : sc.label}
             </span>
           </div>
-          <h1 style={styles.title}>{subject.name}</h1>
+          <div style={styles.titleRow}>
+            <h1 style={styles.title}>{subject.name}</h1>
+            {onEditSubject && (
+              <button onClick={onEditSubject} style={styles.editInlineBtn} title="Edit subject">
+                <Pencil size={14} />
+              </button>
+            )}
+          </div>
           {subject.website && (
             <a href={subject.website} target="_blank" rel="noopener noreferrer" style={styles.websiteLink}>
               <ExternalLink size={12} />
@@ -83,17 +76,17 @@ export default function SubjectHero({
           <span style={styles.statSub}>completion</span>
           <div style={styles.breakdown}>
             <div style={styles.bItem}>
-              <span style={{ ...styles.bCount, color: todoTasks > 0 ? "#525252" : "#d4d4d4" }}>{todoTasks}</span>
+              <span style={{ ...styles.bCount, color: todoTasks > 0 ? "var(--ink-2)" : "var(--ink-4)" }}>{todoTasks}</span>
               <span style={styles.bLabel}>To Do</span>
             </div>
             <span style={styles.bDot}>·</span>
             <div style={styles.bItem}>
-              <span style={{ ...styles.bCount, color: overdueTasks > 0 ? "#dc2626" : "#d4d4d4" }}>{overdueTasks}</span>
+              <span style={{ ...styles.bCount, color: overdueTasks > 0 ? "var(--color-overdue)" : "var(--ink-4)" }}>{overdueTasks}</span>
               <span style={styles.bLabel}>Overdue</span>
             </div>
             <span style={styles.bDot}>·</span>
             <div style={styles.bItem}>
-              <span style={{ ...styles.bCount, color: completedTasks > 0 ? "#059669" : "#d4d4d4" }}>{completedTasks}</span>
+              <span style={{ ...styles.bCount, color: completedTasks > 0 ? "var(--color-done)" : "var(--ink-4)" }}>{completedTasks}</span>
               <span style={styles.bLabel}>Done</span>
             </div>
           </div>
@@ -116,7 +109,7 @@ export default function SubjectHero({
             </>
           ) : (
             <>
-              <ProgressRing percentage={pointsPct} size={72} strokeWidth={6} color="#f43f5e">
+              <ProgressRing percentage={pointsPct} size={72} strokeWidth={6} color="var(--rose-400)">
                 <span style={styles.ringNum}>{earnedPoints}</span>
                 <span style={styles.ringLabel}>pts</span>
               </ProgressRing>
@@ -139,13 +132,16 @@ export default function SubjectHero({
 
         {/* Col 4 — Actions */}
         <div style={styles.colActions}>
-          <Button variant="primary" size="md" onClick={onAddTask}>
-            <Plus size={17} />
-            Add Assignment
-          </Button>
-          <button onClick={onDeleteSubject} style={styles.deleteBtn} title="Delete subject">
-            <Trash2 size={15} />
-          </button>
+          {onFinalize && !isFinalized && (
+            <button onClick={onFinalize} style={styles.finalizeBtn}>
+              Finalize Subject
+            </button>
+          )}
+          {onReset && isFinalized && (
+            <button onClick={onReset} style={styles.resetBtn}>
+              Reset to In Progress
+            </button>
+          )}
         </div>
 
       </div>
@@ -155,19 +151,31 @@ export default function SubjectHero({
 
 const styles = {
   hero: {
-    borderRadius: "16px",
-    border: "1px solid #f0f0f0",
+    borderRadius: "var(--r-lg)",
+    border: "1px solid var(--border)",
+    background: "var(--surface)",
     padding: "24px 28px",
     marginBottom: "24px",
+    position: "relative",
+    overflow: "hidden",
+  },
+  accentBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "4px",
+    height: "100%",
+    borderRadius: "4px 0 0 4px",
   },
   columns: {
     display: "flex",
     alignItems: "stretch",
     gap: "0",
+    paddingLeft: "12px",
   },
   divider: {
     width: "1px",
-    background: "rgba(0,0,0,0.06)",
+    background: "var(--border)",
     margin: "0 24px",
     flexShrink: 0,
   },
@@ -202,47 +210,69 @@ const styles = {
   },
   statusBadge: {
     padding: "3px 10px",
-    borderRadius: "20px",
-    fontSize: "12px",
+    borderRadius: "99px",
+    fontSize: "11px",
     fontWeight: "600",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  titleRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    minWidth: 0,
   },
   title: {
+    fontFamily: "'Instrument Serif', serif",
     fontSize: "32px",
-    fontWeight: "700",
-    color: "#171717",
+    fontWeight: "400",
+    color: "var(--ink)",
     margin: 0,
-    letterSpacing: "-0.5px",
     lineHeight: 1.15,
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
+  editInlineBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    width: "28px",
+    height: "28px",
+    background: "transparent",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-sm)",
+    color: "var(--ink-3)",
+    cursor: "pointer",
+  },
   websiteLink: {
     display: "inline-flex",
     alignItems: "center",
     gap: "5px",
-    color: "#737373",
+    color: "var(--ink-3)",
     fontSize: "12px",
     fontWeight: "500",
     textDecoration: "none",
   },
   colLabel: {
-    fontSize: "10px",
+    fontSize: "11px",
     fontWeight: "600",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
     textTransform: "uppercase",
-    letterSpacing: "0.5px",
+    letterSpacing: "0.06em",
     marginBottom: "4px",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   statBig: {
+    fontFamily: "'Instrument Serif', serif",
     fontSize: "34px",
-    fontWeight: "700",
-    color: "#171717",
+    fontWeight: "400",
+    color: "var(--ink)",
     lineHeight: 1,
   },
   statSub: {
     fontSize: "11px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
     fontWeight: "500",
   },
   breakdown: {
@@ -263,13 +293,13 @@ const styles = {
   },
   bLabel: {
     fontSize: "9px",
-    color: "#a3a3a3",
-    fontWeight: "500",
+    color: "var(--ink-3)",
+    fontWeight: "600",
     textTransform: "uppercase",
-    letterSpacing: "0.3px",
+    letterSpacing: "0.06em",
   },
   bDot: {
-    color: "#e5e5e5",
+    color: "var(--border-2)",
     fontSize: "14px",
     alignSelf: "flex-start",
     marginTop: "2px",
@@ -277,12 +307,12 @@ const styles = {
   ringNum: {
     fontSize: "16px",
     fontWeight: "700",
-    color: "#171717",
+    color: "var(--ink)",
     lineHeight: 1,
   },
   ringLabel: {
     fontSize: "9px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
     fontWeight: "500",
     marginTop: "1px",
   },
@@ -295,43 +325,44 @@ const styles = {
   pointsEarned: {
     fontSize: "13px",
     fontWeight: "700",
-    color: "#171717",
+    color: "var(--ink)",
   },
   pointsSep: {
     fontSize: "11px",
-    color: "#d4d4d4",
+    color: "var(--ink-4)",
   },
   pointsTotal: {
     fontSize: "11px",
     fontWeight: "500",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
   },
   gradePassed: {
+    fontFamily: "'Instrument Serif', serif",
     fontSize: "36px",
-    fontWeight: "700",
-    color: "#059669",
+    fontWeight: "400",
+    color: "var(--color-done)",
     lineHeight: 1,
   },
   gradeCaption: {
     fontSize: "11px",
-    color: "#059669",
+    color: "var(--color-done)",
     fontWeight: "500",
     opacity: 0.8,
   },
   pointsSubtle: {
     fontSize: "12px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
     fontWeight: "500",
     marginTop: "4px",
   },
   gradeHint: {
     fontSize: "11px",
-    color: "#a3a3a3",
+    color: "var(--ink-3)",
     fontWeight: "600",
     marginTop: "2px",
-    background: "#f5f5f5",
+    background: "var(--surface-3)",
     padding: "2px 8px",
-    borderRadius: "5px",
+    borderRadius: "var(--r-sm)",
   },
   deleteBtn: {
     display: "flex",
@@ -340,9 +371,33 @@ const styles = {
     width: "36px",
     height: "36px",
     background: "transparent",
-    border: "1px solid #fde8e8",
-    borderRadius: "8px",
-    color: "#f87171",
+    border: "1px solid var(--color-overdue)30",
+    borderRadius: "var(--r-sm)",
+    color: "var(--color-overdue)",
     cursor: "pointer",
+  },
+  finalizeBtn: {
+    padding: "7px 16px",
+    background: "var(--rose-400)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "var(--r-md)",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "500",
+    width: "100%",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  resetBtn: {
+    padding: "7px 16px",
+    background: "transparent",
+    color: "var(--ink-3)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-md)",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "500",
+    width: "100%",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 };

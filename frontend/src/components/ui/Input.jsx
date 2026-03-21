@@ -1,22 +1,17 @@
-export default function Input({ 
-  label, 
-  error, 
-  style = {}, 
-  ...props 
+export default function Input({
+  label,
+  error,
+  style = {},
+  ...props
 }) {
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: '6px', 
-      width: '100%' 
-    }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
       {label && (
-        <label style={{ 
-          fontSize: '14px', 
-          fontWeight: '500', 
-          color: '#171717',
-          fontFamily: "-apple-system, 'SF Pro Display', Inter, system-ui, sans-serif",
+        <label style={{
+          fontSize: '13px',
+          fontWeight: '600',
+          color: 'var(--ink)',
+          fontFamily: "'DM Sans', system-ui, sans-serif",
         }}>
           {label}
         </label>
@@ -24,24 +19,24 @@ export default function Input({
       <input
         style={{
           width: '100%',
-          padding: '12px 16px',
-          backgroundColor: 'white',
-          border: '1px solid #e5e5e5',
-          borderRadius: '12px',
-          color: '#171717',
-          fontSize: '16px',
-          fontFamily: "-apple-system, 'SF Pro Display', Inter, system-ui, sans-serif",
+          padding: '10px 12px',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--r-md)',
+          color: 'var(--ink)',
+          fontSize: '13px',
+          fontFamily: "'DM Sans', system-ui, sans-serif",
           outline: 'none',
-          transition: 'all 0.2s ease',
+          transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
           ...style,
         }}
         {...props}
       />
       {error && (
-        <span style={{ 
-          fontSize: '12px', 
-          color: '#ef4444',
-          fontFamily: "-apple-system, 'SF Pro Display', Inter, system-ui, sans-serif",
+        <span style={{
+          fontSize: '12px',
+          color: 'var(--color-overdue)',
+          fontFamily: "'DM Sans', system-ui, sans-serif",
         }}>
           {error}
         </span>

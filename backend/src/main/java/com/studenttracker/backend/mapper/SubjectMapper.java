@@ -28,7 +28,7 @@ public class SubjectMapper {
         dto.setId(subject.getId());
         dto.setName(subject.getName());
         dto.setWebsite(subject.getWebsite());
-        dto.setDifficulty(subject.getDifficulty());
+        dto.setColor(subject.getColor());
         dto.setTotalTasks(totalTasks);
         dto.setCompletedTasks(completedTasks);
         dto.setTotalPoints(totalPoints);
@@ -36,6 +36,8 @@ public class SubjectMapper {
         dto.setFinalGrade(subject.getFinalGrade());
         dto.setManualGradeOverride(subject.getManualGradeOverride());
         dto.setPassedAt(subject.getPassedAt());
+        dto.setSemesterId(subject.getSemester() != null ? subject.getSemester().getId() : null);
+        dto.setSemesterName(subject.getSemester() != null ? subject.getSemester().getName() : null);
         return dto;
     }
 }
