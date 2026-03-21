@@ -8,5 +8,10 @@
     "name": "claude.api.key",
     "type": "java.lang.String",
     "description": "A description for 'claude.api.key'"
+  },
+  {
+    "name": "app.allowed-origins",
+    "type": "java.lang.String",
+    "description": "A description for 'app.allowed-origins'"
   }
 ]}
