@@ -46,8 +46,7 @@ export default function Sidebar() {
     <div style={styles.sidebar}>
       {/* Logo/Brand */}
       <div style={styles.brand}>
-        <span style={styles.logoSemester}>Semester</span>
-        <span style={styles.logoOS}>OS</span>
+        <img src="/logo.png" alt="SemesterOS" style={styles.logoImg} />
       </div>
 
       {/* Navigation */}
@@ -126,19 +125,10 @@ const styles = {
     paddingBottom: "20px",
     borderBottom: "1px solid var(--border)",
   },
-  logoSemester: {
-    fontFamily: "'Nunito', sans-serif",
-    fontSize: "18px",
-    fontWeight: "800",
-    color: "var(--ink)",
-    letterSpacing: "-0.3px",
-  },
-  logoOS: {
-    fontFamily: "'Nunito', sans-serif",
-    fontSize: "18px",
-    fontWeight: "800",
-    color: "var(--rose-400)",
-    letterSpacing: "-0.3px",
+  logoImg: {
+    height: "28px",
+    width: "auto",
+    objectFit: "contain",
   },
   nav: {
     display: "flex",
