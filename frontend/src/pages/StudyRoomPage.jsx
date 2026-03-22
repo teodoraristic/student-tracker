@@ -200,7 +200,7 @@ export default function StudyRoomPage() {
 
   useEffect(() => {
     if (running) {
-      document.title = `${mins}:${secs} · ${cfg.label} — Student Tracker`;
+      document.title = `${mins}:${secs} · ${cfg.label} — SemesterOS`;
     } else {
       document.title = "Student Tracker";
     }

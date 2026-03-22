@@ -46,13 +46,8 @@ export default function Sidebar() {
     <div style={styles.sidebar}>
       {/* Logo/Brand */}
       <div style={styles.brand}>
-        <div style={styles.logoIcon}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-        <span style={styles.logoStudent}>Student</span>
-        <span style={styles.logoTracker}>Tracker</span>
+        <span style={styles.logoSemester}>Semester</span>
+        <span style={styles.logoOS}>OS</span>
       </div>
 
       {/* Navigation */}
@@ -125,34 +120,25 @@ const styles = {
   brand: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "0",
     marginBottom: "28px",
     paddingLeft: "10px",
     paddingBottom: "20px",
     borderBottom: "1px solid var(--border)",
   },
-  logoIcon: {
-    width: "28px",
-    height: "28px",
-    borderRadius: "7px",
-    background: "linear-gradient(135deg, var(--rose-300) 0%, var(--rose-400) 100%)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    boxShadow: "0 2px 8px rgba(244, 96, 126, 0.3)",
-  },
-  logoStudent: {
-    fontFamily: "'Instrument Serif', serif",
+  logoSemester: {
+    fontFamily: "'Nunito', sans-serif",
     fontSize: "18px",
-    fontWeight: "400",
+    fontWeight: "800",
     color: "var(--ink)",
+    letterSpacing: "-0.3px",
   },
-  logoTracker: {
-    fontFamily: "'Instrument Serif', serif",
+  logoOS: {
+    fontFamily: "'Nunito', sans-serif",
     fontSize: "18px",
-    fontWeight: "400",
+    fontWeight: "800",
     color: "var(--rose-400)",
+    letterSpacing: "-0.3px",
   },
   nav: {
     display: "flex",
