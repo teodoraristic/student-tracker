@@ -126,7 +126,7 @@ const styles = {
     borderBottom: "1px solid var(--border)",
   },
   logoImg: {
-    height: "28px",
+    height: "40px",
     width: "auto",
     objectFit: "contain",
   },
