@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/useAuth";
 import { getAllSubjects } from "../services/subjectService";
 import { getAllTasks } from "../services/taskService";
 import { getSubtasksByDate, toggleSubtaskDone, updateSubtaskPlan, createSubtask } from "../services/subtaskService";
@@ -19,6 +20,30 @@ const QUOTES = [
   "Your future is created by what you do today.",
   "One assignment at a time. You've got this.",
 ];
+
+const getGreeting = (firstName) => {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return {
+    text: `Good morning, ${firstName}`,
+    note: "Let's see what's on the agenda today.",
+  };
+  if (h >= 12 && h < 14) return {
+    text: `Good afternoon, ${firstName}`,
+    note: "Hope the morning was productive.",
+  };
+  if (h >= 14 && h < 18) return {
+    text: `Still going, ${firstName}?`,
+    note: "Afternoon grind. Keep the momentum.",
+  };
+  if (h >= 18 && h < 22) return {
+    text: `Good evening, ${firstName}`,
+    note: "Time to wrap up or plan ahead.",
+  };
+  return {
+    text: `Still up, ${firstName}?`,
+    note: "Late night study session. Respect.",
+  };
+};
 
 const DONE_QUOTES = [
   "All clear for today. Well done.",
@@ -45,6 +70,8 @@ const formatDue = (raw) => {
 // ── component ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const greeting = getGreeting(user?.firstName ?? "");
   const todayDate = new Date();
   todayDate.setHours(0, 0, 0, 0);
 
@@ -259,9 +286,8 @@ export default function HomePage() {
           <h1 style={styles.dayTitle}>
             {todayDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </h1>
-          <p style={styles.dayGreeting}>
-            Good morning
-          </p>
+          <p style={styles.dayGreeting}>{greeting.text}</p>
+          <p style={styles.dayNote}>{greeting.note}</p>
         </div>
       </div>
 
@@ -281,7 +307,7 @@ export default function HomePage() {
         {/* Card 2 — Tasks Left */}
         <div style={styles.statCard}>
           <span style={styles.statNum}>{tasksLeftCount}</span>
-          <span style={styles.statLabel}>TASKS LEFT</span>
+          <span style={styles.statLabel}>ASSIGNMENTS LEFT</span>
         </div>
 
         {/* Card 3 — Subjects In Progress */}
@@ -904,6 +930,12 @@ const styles = {
     fontFamily: "'Instrument Serif', serif",
     fontSize: "22px", fontWeight: "400", fontStyle: "italic",
     color: "var(--ink-3)", margin: 0,
+  },
+  dayNote: {
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    fontSize: "13px",
+    color: "var(--ink-3)",
+    margin: "4px 0 0 0",
   },
   examBadge: {
     padding: "6px 14px",

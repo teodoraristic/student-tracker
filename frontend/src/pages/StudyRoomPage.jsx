@@ -107,9 +107,32 @@ export default function StudyRoomPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, mode]);
 
+  // ── beep ─────────────────────────────────────────────────────────────────────
+  const playBeep = (type) => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = type === "work"
+        ? [{ f: 880, t: 0, d: 0.15 }, { f: 880, t: 0.2, d: 0.15 }, { f: 1046, t: 0.4, d: 0.3 }]
+        : [{ f: 523, t: 0, d: 0.2 }, { f: 659, t: 0.25, d: 0.3 }];
+      notes.forEach(({ f, t, d }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = f;
+        osc.type = "sine";
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + t);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + d);
+        osc.start(ctx.currentTime + t);
+        osc.stop(ctx.currentTime + t + d);
+      });
+    } catch (_) {}
+  };
+
   // ── handlers ─────────────────────────────────────────────────────────────────
   const handleTimerEnd = () => {
     setRunning(false);
+    playBeep(mode);
     if (mode === "work") {
       setSessions((n) => n + 1);
       doLog(elapsedRef.current);
@@ -159,10 +182,30 @@ export default function StudyRoomPage() {
 
   // ── derived ──────────────────────────────────────────────────────────────────
   const cfg = MODES[mode];
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.code === "Space" && e.target === document.body) {
+        e.preventDefault();
+        setRunning((r) => !r);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const total = cfg.minutes * 60;
   const pct = ((total - secondsLeft) / total) * 100;
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const secs = String(secondsLeft % 60).padStart(2, "0");
+
+  useEffect(() => {
+    if (running) {
+      document.title = `${mins}:${secs} · ${cfg.label} — Student Tracker`;
+    } else {
+      document.title = "Student Tracker";
+    }
+    return () => { document.title = "Student Tracker"; };
+  }, [running, mins, secs, cfg.label]);
 
   const filteredTasks = tasks.filter(
     (t) => selectedSubject && t.subjectId === selectedSubject.id && t.status !== "DONE"
