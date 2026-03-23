@@ -1,25 +1,45 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
+import BottomNav from "./BottomNav";
+import MobileHeader from "./MobileHeader";
+import useIsMobile from "../../hooks/useIsMobile";
 
 export default function Layout() {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh", width: "100%" }}>
+        <MobileHeader />
+        <main
+          style={{
+            flex: 1,
+            padding: "16px",
+            paddingBottom: "76px",
+            background: "var(--surface-3)",
+            overflowY: "auto",
+          }}
+        >
+          <Outlet />
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", height: "100vh", width: "100%" }}>
-      
-      {/* LEFT SIDEBAR */}
       <Sidebar />
-
-      {/* MAIN CONTENT */}
       <main
         style={{
           flex: 1,
           padding: "24px",
           background: "var(--surface-3)",
-          overflowY: "auto"
+          overflowY: "auto",
         }}
       >
         <Outlet />
       </main>
-
     </div>
   );
 }

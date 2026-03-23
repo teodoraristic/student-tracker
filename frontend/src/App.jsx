@@ -42,6 +42,7 @@ function App() {
         {/* PROTECTED ROUTES WITH LAYOUT */}
         <Route
           element={
+            // eslint-disable-next-line react-hooks/static-components
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
