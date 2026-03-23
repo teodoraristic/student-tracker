@@ -1,14 +1,21 @@
+import useIsMobile from "../../hooks/useIsMobile";
+
 export default function Modal({ isOpen, onClose, title, children }) {
+    const isMobile = useIsMobile();
     if (!isOpen) return null;
 
     return (
-        <div style={styles.overlay} onClick={onClose}>
-            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div
+            style={{ ...styles.overlay, alignItems: isMobile ? "flex-end" : "center" }}
+            onClick={onClose}
+        >
+            <div
+                style={isMobile ? styles.sheet : styles.modal}
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div style={styles.header}>
                     <h2 style={styles.title}>{title}</h2>
-                    <button style={styles.closeBtn} onClick={onClose}>
-                        ✕
-                    </button>
+                    <button style={styles.closeBtn} onClick={onClose}>✕</button>
                 </div>
                 <div style={styles.content}>
                     {children}
@@ -29,7 +36,6 @@ const styles = {
         backdropFilter: "blur(4px)",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
         zIndex: 1000,
     },
     modal: {
@@ -41,6 +47,16 @@ const styles = {
         overflow: "auto",
         boxShadow: "0 20px 60px rgba(26, 21, 35, 0.25)",
         border: "1px solid var(--border)",
+    },
+    sheet: {
+        backgroundColor: "var(--surface)",
+        borderRadius: "var(--r-xl) var(--r-xl) 0 0",
+        width: "100%",
+        maxHeight: "88vh",
+        overflowY: "auto",
+        boxShadow: "0 -8px 40px rgba(26, 21, 35, 0.2)",
+        border: "1px solid var(--border)",
+        paddingBottom: "env(safe-area-inset-bottom)",
     },
     header: {
         display: "flex",

@@ -31,7 +31,9 @@ export default function MobileHeader() {
 
   return (
     <header style={styles.header}>
-      <img src="/logo.png" alt="SemesterOS" style={styles.logo} />
+      <Link to="/home" style={{ display: "flex", alignItems: "center" }}>
+        <img src="/logo.png" alt="SemesterOS" style={styles.logo} />
+      </Link>
       <div style={styles.actions}>
         <button onClick={toggleDark} style={styles.iconBtn} title="Toggle dark mode">
           {isDark ? <Sun size={18} /> : <Moon size={18} />}

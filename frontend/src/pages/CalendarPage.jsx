@@ -7,6 +7,7 @@ import TaskForm from "../components/tasks/TaskForm";
 import { SUBJECT_COLORS } from "../utils/subjectColors";
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon, Plus, Clock, GraduationCap } from "lucide-react";
 import { getSubtasksByTaskId } from "../services/subtaskService";
+import useIsMobile from "../hooks/useIsMobile";
 // ── Constants ──────────────────────────────────────────────────────────────────
 const EXAM_PERIOD_COLORS = ["#f59e0b", "#3b82f6", "#8b5cf6", "#10b981", "#ec4899", "#14b8a6", "#f97316", "#6366f1"];
 
@@ -87,6 +88,7 @@ function useCalendar() {
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 export default function CalendarPage() {
+  const isMobile = useIsMobile();
   const [tasks, setTasks] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [examPeriods, setExamPeriods] = useState([]);
@@ -266,12 +268,14 @@ export default function CalendarPage() {
     <div style={s.page}>
 
       {/* Page header */}
-      <div style={s.pageHeader}>
-        <div>
-          <h1 style={s.pageTitle}>Calendar</h1>
-          <p style={s.pageSubtitle}>View and manage your assignments by date</p>
-        </div>
-        <div style={s.headerRight}>
+      <div style={isMobile ? s.pageHeaderMobile : s.pageHeader}>
+        {!isMobile && (
+          <div>
+            <h1 style={s.pageTitle}>Calendar</h1>
+            <p style={s.pageSubtitle}>View and manage your assignments by date</p>
+          </div>
+        )}
+        <div style={isMobile ? s.headerRightMobile : s.headerRight}>
           <select
             style={s.filterSelect}
             value={filterSubjectId}
@@ -300,7 +304,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Main layout */}
-      <div style={s.layout}>
+      <div style={isMobile ? s.layoutMobile : s.layout}>
 
         {/* Calendar card */}
         <div style={s.calCard}>
@@ -794,6 +798,9 @@ const s = {
   },
 
   layout: { display: "grid", gridTemplateColumns: "1fr 340px", gap: "20px", alignItems: "start" },
+  layoutMobile: { display: "flex", flexDirection: "column", gap: "16px" },
+  pageHeaderMobile: { display: "flex", justifyContent: "flex-end", marginBottom: "12px" },
+  headerRightMobile: { display: "flex", alignItems: "center", gap: "8px", width: "100%" },
   calCard: {
     background: "var(--surface)", border: "1px solid var(--border)",
     borderRadius: "var(--r-lg)", padding: "24px",

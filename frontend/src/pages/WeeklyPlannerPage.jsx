@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Plus, Check, Trash2, X } from "lucide-react";
+import useIsMobile from "../hooks/useIsMobile";
 import {
   getSubtasksByDate,
   getUnplannedSubtasks,
@@ -379,6 +380,7 @@ function AddSubtaskModal({ date, subjects, onClose, onCreate }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function WeeklyPlannerPage() {
+  const isMobile = useIsMobile();
   const {
     weekStart, weekDays, subtasksByDay, backlog, loading,
     goToPrev, goToNext, goToThisWeek,
@@ -551,18 +553,18 @@ export default function WeeklyPlannerPage() {
   }
 
   return (
-    <div style={s.page} onDragEnd={handleDragEnd}>
+    <div style={{ ...s.page, padding: isMobile ? "16px" : "32px" }} onDragEnd={handleDragEnd}>
       {/* Header */}
-      <div style={s.header}>
+      <div style={isMobile ? s.headerMobile : s.header}>
         <div style={s.headerLeft}>
-          <h1 style={s.pageTitle}>Weekly Planner</h1>
+          {!isMobile && <h1 style={s.pageTitle}>Weekly Planner</h1>}
           <span style={s.weekRange}>{formatWeekRange(weekStart)}</span>
         </div>
-        <div style={s.headerRight}>
+        <div style={isMobile ? s.headerRightMobile : s.headerRight}>
           <select
             value={filterSubjectId ?? ""}
             onChange={e => setFilterSubjectId(e.target.value ? Number(e.target.value) : null)}
-            style={s.filterSelect}
+            style={{ ...s.filterSelect, flex: isMobile ? 1 : undefined }}
           >
             <option value="">All subjects</option>
             {activeSubjects.map(sub => (
@@ -587,8 +589,9 @@ export default function WeeklyPlannerPage() {
         </div>
       </div>
 
-      {/* 7-column grid */}
-      <div style={s.grid}>
+      {/* 7-column grid — horizontally scrollable on mobile */}
+      <div style={isMobile ? s.gridScrollWrapper : undefined}>
+      <div style={isMobile ? s.gridMobile : s.grid}>
         {weekDays.map(day => (
           <DayColumn
             key={toDateStr(day)}
@@ -605,6 +608,7 @@ export default function WeeklyPlannerPage() {
             draggingId={dragInfo?.id}
           />
         ))}
+      </div>
       </div>
 
       {/* Backlog */}
@@ -722,6 +726,32 @@ const s = {
   navBtnActive: {
     background: "var(--rose-400)",
     color: "#ffffff",
+  },
+  gridScrollWrapper: {
+    overflowX: "auto",
+    marginLeft: "-16px",
+    marginRight: "-16px",
+    paddingLeft: "16px",
+    paddingRight: "16px",
+    paddingBottom: "8px",
+  },
+  gridMobile: {
+    display: "grid",
+    gridTemplateColumns: "repeat(7, minmax(150px, 1fr))",
+    gap: "8px",
+    width: "max-content",
+    minWidth: "100%",
+  },
+  headerMobile: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+    marginBottom: "16px",
+  },
+  headerRightMobile: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
   grid: {
     display: "grid",

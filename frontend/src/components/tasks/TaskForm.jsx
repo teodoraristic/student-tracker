@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useIsMobile from "../../hooks/useIsMobile";
 
 const toDateInputStr = (date) => {
     if (!date) return "";
@@ -10,6 +11,7 @@ const toDateInputStr = (date) => {
 };
 
 export default function TaskForm({ onSubmit, onCancel, initialData = null, defaultDate = "" }) {
+    const isMobile = useIsMobile();
     const [formData, setFormData] = useState({
         title: initialData?.title || "",
         description: initialData?.description || "",
@@ -60,7 +62,7 @@ export default function TaskForm({ onSubmit, onCancel, initialData = null, defau
                 />
             </div>
 
-            <div style={styles.row}>
+            <div style={isMobile ? styles.rowMobile : styles.row}>
                 <div style={styles.field}>
                     <label style={styles.label}>Due Date (optional)</label>
                     <input
@@ -113,6 +115,11 @@ const styles = {
     row: {
         display: "flex",
         gap: "14px",
+    },
+    rowMobile: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
     },
     label: {
         fontSize: "13px",
