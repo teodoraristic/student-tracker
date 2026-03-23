@@ -998,11 +998,13 @@ const styles = {
     borderRadius: "var(--r-lg)",
     padding: "16px",
     height: "fit-content",
+    minWidth: 0,
   },
   colTitle: {
     display: "flex", alignItems: "center", gap: "8px",
     fontSize: "15px", fontWeight: "600", color: "var(--ink)", margin: 0,
     fontFamily: "'DM Sans', system-ui, sans-serif",
+    flex: 1, minWidth: 0,
   },
 
   warningCard: {
@@ -1071,6 +1073,7 @@ const styles = {
     display: "flex", alignItems: "center", gap: "4px",
     background: "transparent", border: "none", cursor: "pointer",
     fontSize: "12px", fontWeight: "500", color: "var(--rose-400)", padding: 0,
+    flexShrink: 0, whiteSpace: "nowrap",
   },
 
   expandBtn: {
