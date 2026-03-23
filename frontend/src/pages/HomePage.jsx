@@ -1004,7 +1004,7 @@ const styles = {
     display: "flex", alignItems: "center", gap: "8px",
     fontSize: "15px", fontWeight: "600", color: "var(--ink)", margin: 0,
     fontFamily: "'DM Sans', system-ui, sans-serif",
-    flex: 1, minWidth: 0,
+    flex: 1, minWidth: 0, overflow: "hidden",
   },
 
   warningCard: {
@@ -1068,7 +1068,7 @@ const styles = {
   subProgressLabel: { fontSize: "11px", color: "var(--ink-3)", fontWeight: "500", whiteSpace: "nowrap" },
 
   colTitleRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" },
-  monthLabel: { fontSize: "13px", fontWeight: "400", color: "var(--ink-3)", marginLeft: "4px" },
+  monthLabel: { fontSize: "13px", fontWeight: "400", color: "var(--ink-3)", marginLeft: "4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 },
   plannerBtn: {
     display: "flex", alignItems: "center", gap: "4px",
     background: "transparent", border: "none", cursor: "pointer",

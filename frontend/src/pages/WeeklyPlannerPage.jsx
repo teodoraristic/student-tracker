@@ -113,30 +113,33 @@ function useWeeklyPlanner() {
 function SubtaskCard({ subtask, onToggle, onDelete, onUnplan, isBacklog, onAssign, weekDays, onDragStart, isDragging }) {
   const [hovered, setHovered] = useState(false);
   const [assigning, setAssigning] = useState(false);
+  const isMobile = useIsMobile();
   const color = subjectColor(subtask.subjectId);
 
   return (
     <div
-      draggable
-      onDragStart={e => { e.dataTransfer.effectAllowed = "move"; onDragStart(); }}
+      draggable={!isMobile}
+      onDragStart={!isMobile ? (e => { e.dataTransfer.effectAllowed = "move"; onDragStart(); }) : undefined}
       style={{
         ...c.card,
         ...(subtask.done ? c.cardDone : {}),
         ...(hovered ? c.cardHover : {}),
         ...(isDragging ? c.cardDragging : {}),
-        cursor: "grab",
+        cursor: isMobile ? "default" : "grab",
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setAssigning(false); }}
+      onMouseEnter={() => !isMobile && setHovered(true)}
+      onMouseLeave={() => { if (!isMobile) { setHovered(false); setAssigning(false); } }}
     >
-      {/* Checkbox */}
-      <button
-        onClick={() => onToggle(subtask.id, !subtask.done)}
-        style={{ ...c.checkbox, ...(subtask.done ? c.checkboxDone : {}) }}
-        title={subtask.done ? "Mark undone" : "Mark done"}
-      >
-        {subtask.done && <Check size={10} strokeWidth={3} />}
-      </button>
+      {/* Checkbox — hidden in backlog on mobile to avoid accidental "deletion" */}
+      {!(isMobile && isBacklog) && (
+        <button
+          onClick={() => onToggle(subtask.id, !subtask.done)}
+          style={{ ...c.checkbox, ...(subtask.done ? c.checkboxDone : {}) }}
+          title={subtask.done ? "Mark undone" : "Mark done"}
+        >
+          {subtask.done && <Check size={10} strokeWidth={3} />}
+        </button>
+      )}
 
       {/* Content */}
       <div style={c.cardBody}>
@@ -148,10 +151,42 @@ function SubtaskCard({ subtask, onToggle, onDelete, onUnplan, isBacklog, onAssig
             {subtask.subjectName}
           </span>
         )}
+
+        {/* Mobile backlog: day picker */}
+        {isMobile && isBacklog && (
+          assigning ? (
+            <div style={c.dayPicker}>
+              {weekDays.map(day => {
+                const dateStr = toDateStr(day);
+                const dayIdx = (day.getDay() + 6) % 7;
+                return (
+                  <button
+                    key={dateStr}
+                    style={c.dayPickerBtn}
+                    onClick={e => { e.stopPropagation(); onAssign(subtask.id, dateStr); setAssigning(false); }}
+                  >
+                    <span style={c.dayPickerDay}>{DAY_NAMES[dayIdx]}</span>
+                    <span style={c.dayPickerNum}>{day.getDate()}</span>
+                  </button>
+                );
+              })}
+              <button style={c.dayPickerCancel} onClick={e => { e.stopPropagation(); setAssigning(false); }}>
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              style={c.assignBtn}
+              onClick={e => { e.stopPropagation(); setAssigning(true); }}
+            >
+              + Assign to day
+            </button>
+          )
+        )}
       </div>
 
-      {/* Actions on hover — only shown for planned (non-backlog) subtasks */}
-      {hovered && !isBacklog && (
+      {/* Actions on hover — only shown for planned (non-backlog) subtasks on desktop */}
+      {hovered && !isBacklog && !isMobile && (
         <div style={c.actions}>
           <button
             onClick={() => onUnplan(subtask.id)}
@@ -161,6 +196,17 @@ function SubtaskCard({ subtask, onToggle, onDelete, onUnplan, isBacklog, onAssig
             <X size={12} />
           </button>
         </div>
+      )}
+
+      {/* Mobile non-backlog: unplan button always visible */}
+      {isMobile && !isBacklog && (
+        <button
+          onClick={e => { e.stopPropagation(); onUnplan(subtask.id); }}
+          style={c.unplanBtn}
+          title="Remove from plan"
+        >
+          <X size={12} />
+        </button>
       )}
     </div>
   );
@@ -928,16 +974,63 @@ const c = {
     display: "flex",
     alignItems: "center",
     gap: "2px",
-    padding: "3px 6px",
+    padding: "5px 8px",
     borderRadius: "var(--r-sm)",
-    border: "1px solid var(--border)",
-    background: "var(--surface)",
-    color: "var(--ink-2)",
+    border: "1px dashed var(--rose-400)",
+    background: "var(--rose-50)",
+    color: "var(--rose-500)",
     fontSize: "11px",
-    fontWeight: "500",
+    fontWeight: "600",
     cursor: "pointer",
     whiteSpace: "nowrap",
     fontFamily: "'DM Sans', system-ui, sans-serif",
+    marginTop: "4px",
+    width: "fit-content",
+  },
+  dayPicker: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "4px",
+    marginTop: "6px",
+    alignItems: "center",
+  },
+  dayPickerBtn: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "4px 6px",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--border)",
+    background: "var(--surface)",
+    cursor: "pointer",
+    minWidth: "36px",
+  },
+  dayPickerDay: {
+    fontSize: "9px",
+    fontWeight: "600",
+    color: "var(--ink-3)",
+    textTransform: "uppercase",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  dayPickerNum: {
+    fontSize: "13px",
+    fontWeight: "700",
+    color: "var(--ink)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    lineHeight: 1,
+  },
+  dayPickerCancel: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "28px",
+    height: "28px",
+    border: "none",
+    background: "transparent",
+    color: "var(--ink-3)",
+    cursor: "pointer",
+    borderRadius: "var(--r-sm)",
+    padding: 0,
   },
   unplanBtn: {
     display: "flex",

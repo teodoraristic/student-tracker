@@ -6,8 +6,10 @@ import Modal from "../common/Modal";
 import { ChevronDown, ChevronRight, Calendar, Award, CheckCircle2, Circle, Plus, Edit2, Trash2, X, GraduationCap } from "lucide-react";
 import { updateTask, updateTaskStatus, deleteTask } from "../../services/taskService";
 import { getSubtasksByTaskId, createSubtask, toggleSubtaskDone, deleteSubtask, updateSubtaskPlan } from "../../services/subtaskService";
+import useIsMobile from "../../hooks/useIsMobile";
 
 export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [subtasks, setSubtasks] = useState([]);
   const [subtasksLoaded, setSubtasksLoaded] = useState(false);
@@ -200,16 +202,16 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
 
         {/* Right */}
         <div style={styles.rightSection}>
-          {/* Due date */}
-          {dueDate && !isDone && (
+          {/* Due date — hidden on mobile */}
+          {dueDate && !isDone && !isMobile && (
             <span style={{ ...styles.metaChip, color: dueDate.color }}>
               <Calendar size={12} />
               {dueDate.text}
             </span>
           )}
 
-          {/* Points */}
-          {task.points > 0 && (
+          {/* Points — hidden on mobile */}
+          {task.points > 0 && !isMobile && (
             <span style={{ ...styles.metaChip, color: "var(--rose-400)" }}>
               <Award size={12} />
               {isDone && task.earnedPoints != null
@@ -238,7 +240,26 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
 
       {/* Subtasks panel */}
       {open && (
-        <div style={styles.subtasksPanel}>
+        <div style={{ ...styles.subtasksPanel, paddingLeft: isMobile ? "16px" : "52px" }}>
+          {/* Mobile: show chips here since they're hidden in the row */}
+          {isMobile && (dueDate || task.points > 0) && (
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "10px" }}>
+              {dueDate && !isDone && (
+                <span style={{ ...styles.metaChip, color: dueDate.color }}>
+                  <Calendar size={12} />
+                  {dueDate.text}
+                </span>
+              )}
+              {task.points > 0 && (
+                <span style={{ ...styles.metaChip, color: "var(--rose-400)" }}>
+                  <Award size={12} />
+                  {isDone && task.earnedPoints != null
+                    ? `${task.earnedPoints}/${task.points}pts`
+                    : `${task.points}pts`}
+                </span>
+              )}
+            </div>
+          )}
           {subtasksLoaded && subtasks.length > 0 && (
             <>
               <div style={styles.subtasksHeader}>
