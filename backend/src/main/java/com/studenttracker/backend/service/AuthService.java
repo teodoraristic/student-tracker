@@ -59,6 +59,11 @@ public class AuthService {
         return new AuthResponse(jwtService.generateToken(user));
     }
 
+    public void logout(User user) {
+        user.incrementTokenVersion();
+        userRepository.save(user);
+    }
+
     public User getCurrentUser() {
         Object principal = SecurityContextHolder
                 .getContext()

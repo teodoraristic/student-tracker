@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { validateToken } from "../services/authService";
+import { validateToken, logoutApi } from "../services/authService";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
@@ -52,7 +52,12 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await logoutApi();
+        } catch {
+            // proceed with local logout even if the API call fails
+        }
         setToken(null);
         setUser(null);
     };

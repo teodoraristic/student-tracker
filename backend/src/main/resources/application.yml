@@ -4,7 +4,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${DDL_AUTO}
-    show-sql: true
+    show-sql: ${SHOW_SQL:false}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect

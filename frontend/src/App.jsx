@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./auth/useAuth";
 
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
@@ -32,7 +33,7 @@ function App() {
         {/* redirect root */}
         <Route
           path="/"
-          element={token ? <Navigate to="/home" /> : <Navigate to="/login" />}
+          element={token ? <Navigate to="/home" /> : <LandingPage />}
         />
 
         {/* PUBLIC ROUTES */}

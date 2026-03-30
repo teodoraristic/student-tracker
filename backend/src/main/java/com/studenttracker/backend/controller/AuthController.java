@@ -34,6 +34,12 @@ public class AuthController {
         return authService.login(request);
     }
 
+    @PostMapping("/logout")
+    public void logout() {
+        User user = authService.getCurrentUser();
+        authService.logout(user);
+    }
+
     @GetMapping("/me")
     public UserDTO getCurrentUser() {
         User user = authService.getCurrentUser();

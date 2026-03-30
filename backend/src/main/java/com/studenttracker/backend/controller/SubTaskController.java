@@ -33,7 +33,8 @@ public class SubTaskController {
 
     @GetMapping("/task/{taskId}")
     public List<SubTaskDTO> getAllByTask(@PathVariable Long taskId) {
-        return subTaskService.getAllByTask(taskId);
+        User user = authService.getCurrentUser();
+        return subTaskService.getAllByTask(taskId, user);
     }
 
     // GET /api/subtasks/unplanned
@@ -56,7 +57,8 @@ public class SubTaskController {
             @PathVariable Long id,
             @RequestParam boolean done) {
 
-        return subTaskService.markDone(id, done);
+        User user = authService.getCurrentUser();
+        return subTaskService.markDone(id, done, user);
     }
 
     // PATCH /api/subtasks/{id}/plan
@@ -66,13 +68,15 @@ public class SubTaskController {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
 
+        User user = authService.getCurrentUser();
         String dateStr = (String) body.get("plannedForDate");
         LocalDate plannedForDate = dateStr != null ? LocalDate.parse(dateStr) : null;
-        return subTaskService.updatePlan(id, plannedForDate);
+        return subTaskService.updatePlan(id, plannedForDate, user);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        subTaskService.delete(id);
+        User user = authService.getCurrentUser();
+        subTaskService.delete(id, user);
     }
 }

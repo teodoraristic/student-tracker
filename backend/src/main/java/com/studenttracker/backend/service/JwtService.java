@@ -21,6 +21,7 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("role", user.getRole().name())
+                .claim("tokenVersion", user.getTokenVersion())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()), SignatureAlgorithm.HS256)
@@ -34,5 +35,14 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public int extractTokenVersion(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY.getBytes())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("tokenVersion", Integer.class);
     }
 }

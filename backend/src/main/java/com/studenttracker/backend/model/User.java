@@ -29,6 +29,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int tokenVersion = 0;
+
     public User() {
     }
     
@@ -84,7 +87,11 @@ public class User {
         this.role = role;
     }
 
-    
-    
-    
+    public int getTokenVersion() {
+        return tokenVersion;
+    }
+
+    public void incrementTokenVersion() {
+        this.tokenVersion++;
+    }
 }

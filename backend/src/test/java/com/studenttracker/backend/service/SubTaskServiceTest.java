@@ -100,53 +100,73 @@ class SubTaskServiceTest {
         verify(subTaskRepository, never()).save(any());
     }
 
-    // ── markDone ──────────────────────────────────────────────────────────────
-
-    @Test
-    void markDone_true_setsDoneFlag() {
+    private SubTask subTaskOwnedBy(User owner) {
         SubTask subTask = new SubTask();
         subTask.setId(5L);
         subTask.setTitle("Write tests");
         subTask.setDone(false);
+        subTask.setTask(taskOwnedBy(owner));
+        return subTask;
+    }
+
+    // ── markDone ──────────────────────────────────────────────────────────────
+
+    @Test
+    void markDone_true_setsDoneFlag() {
+        User user = userWithId(1L);
+        SubTask subTask = subTaskOwnedBy(user);
 
         when(subTaskRepository.findById(5L)).thenReturn(Optional.of(subTask));
         when(subTaskRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        SubTaskDTO dto = subTaskService.markDone(5L, true);
+        SubTaskDTO dto = subTaskService.markDone(5L, true, user);
 
         assertThat(dto.isDone()).isTrue();
     }
 
     @Test
     void markDone_false_clearsDoneFlag() {
-        SubTask subTask = new SubTask();
-        subTask.setId(5L);
-        subTask.setTitle("Write tests");
+        User user = userWithId(1L);
+        SubTask subTask = subTaskOwnedBy(user);
         subTask.setDone(true);
 
         when(subTaskRepository.findById(5L)).thenReturn(Optional.of(subTask));
         when(subTaskRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        SubTaskDTO dto = subTaskService.markDone(5L, false);
+        SubTaskDTO dto = subTaskService.markDone(5L, false, user);
 
         assertThat(dto.isDone()).isFalse();
     }
 
     @Test
     void markDone_notFound_throwsNotFoundException() {
+        User user = userWithId(1L);
         when(subTaskRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> subTaskService.markDone(999L, true))
+        assertThatThrownBy(() -> subTaskService.markDone(999L, true, user))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("SubTask not found");
+    }
+
+    @Test
+    void markDone_differentUser_throwsForbidden() {
+        User owner = userWithId(1L);
+        User requester = userWithId(2L);
+        SubTask subTask = subTaskOwnedBy(owner);
+
+        when(subTaskRepository.findById(5L)).thenReturn(Optional.of(subTask));
+
+        assertThatThrownBy(() -> subTaskService.markDone(5L, true, requester))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessage("Access denied");
     }
 
     // ── updatePlan ────────────────────────────────────────────────────────────
 
     @Test
     void updatePlan_setsPlannedDate() {
-        SubTask subTask = new SubTask();
-        subTask.setId(5L);
+        User user = userWithId(1L);
+        SubTask subTask = subTaskOwnedBy(user);
         subTask.setTitle("Study chapter 3");
 
         LocalDate newDate = LocalDate.of(2025, 7, 1);
@@ -154,8 +174,21 @@ class SubTaskServiceTest {
         when(subTaskRepository.findById(5L)).thenReturn(Optional.of(subTask));
         when(subTaskRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        SubTaskDTO dto = subTaskService.updatePlan(5L, newDate);
+        SubTaskDTO dto = subTaskService.updatePlan(5L, newDate, user);
 
         assertThat(dto.getPlannedForDate()).isEqualTo(newDate);
+    }
+
+    @Test
+    void updatePlan_differentUser_throwsForbidden() {
+        User owner = userWithId(1L);
+        User requester = userWithId(2L);
+        SubTask subTask = subTaskOwnedBy(owner);
+
+        when(subTaskRepository.findById(5L)).thenReturn(Optional.of(subTask));
+
+        assertThatThrownBy(() -> subTaskService.updatePlan(5L, LocalDate.of(2025, 7, 1), requester))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessage("Access denied");
     }
 }

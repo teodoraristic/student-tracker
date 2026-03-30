@@ -50,9 +50,13 @@ public class SubTaskService {
         );
     }
 
-    public List<SubTaskDTO> getAllByTask(Long taskId) {
+    public List<SubTaskDTO> getAllByTask(Long taskId, User user) {
 
         Task task = taskService.getById(taskId);
+
+        if (!task.getSubject().getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException("Access denied");
+        }
 
         return subTaskRepository.findAllByTask(task)
                 .stream()
@@ -68,10 +72,14 @@ public class SubTaskService {
                 .toList();
     }
 
-    public SubTaskDTO markDone(Long subTaskId, boolean done) {
+    public SubTaskDTO markDone(Long subTaskId, boolean done, User user) {
 
         SubTask subTask = subTaskRepository.findById(subTaskId)
                 .orElseThrow(() -> new NotFoundException("SubTask not found"));
+
+        if (!subTask.getTask().getSubject().getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException("Access denied");
+        }
 
         subTask.setDone(done);
 
@@ -80,10 +88,14 @@ public class SubTaskService {
         );
     }
 
-    public SubTaskDTO updatePlan(Long id, LocalDate plannedForDate) {
+    public SubTaskDTO updatePlan(Long id, LocalDate plannedForDate, User user) {
 
         SubTask subTask = subTaskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("SubTask not found"));
+
+        if (!subTask.getTask().getSubject().getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException("Access denied");
+        }
 
         subTask.setPlannedForDate(plannedForDate);
 
@@ -98,7 +110,14 @@ public class SubTaskService {
                 .toList();
     }
 
-    public void delete(Long id) {
+    public void delete(Long id, User user) {
+        SubTask subTask = subTaskRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("SubTask not found"));
+
+        if (!subTask.getTask().getSubject().getUser().getId().equals(user.getId())) {
+            throw new ForbiddenException("Access denied");
+        }
+
         subTaskRepository.deleteById(id);
     }
 }

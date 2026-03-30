@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,9 +108,12 @@ public class AIService {
 
         String bodyJson = objectMapper.writeValueAsString(body);
 
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.anthropic.com/v1/messages"))
+                .timeout(Duration.ofSeconds(30))
                 .header("content-type", "application/json")
                 .header("x-api-key", apiKey)
                 .header("anthropic-version", "2023-06-01")
