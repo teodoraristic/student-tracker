@@ -1,14 +1,6 @@
 import { useState, useEffect } from "react";
 import { getAllExamPeriods } from "../../services/examPeriodService";
-
-const toDateInputStr = (date) => {
-    if (!date) return "";
-    if (Array.isArray(date)) {
-        const [y, m, d] = date;
-        return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    }
-    return date;
-};
+import { toDateInputStr } from "../../utils/dateUtils";
 
 export default function ExamForm({ onSubmit, onCancel, initialData = null }) {
     const [examPeriods, setExamPeriods] = useState([]);
@@ -40,38 +32,38 @@ export default function ExamForm({ onSubmit, onCancel, initialData = null }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.field}>
-                <label style={styles.label}>Due Date (optional)</label>
+        <form onSubmit={handleSubmit} style={s.form}>
+            <div style={s.field}>
+                <label style={s.label}>Due Date (optional)</label>
                 <input
                     type="date"
                     name="dueDate"
                     value={formData.dueDate}
                     onChange={handleChange}
-                    style={styles.input}
+                    style={s.input}
                 />
             </div>
 
-            <div style={styles.field}>
-                <label style={styles.label}>Points (optional)</label>
+            <div style={s.field}>
+                <label style={s.label}>Points (optional)</label>
                 <input
                     type="number"
                     name="points"
                     value={formData.points}
                     onChange={handleChange}
-                    style={styles.input}
+                    style={s.input}
                     placeholder="e.g. 100"
                     min="0"
                 />
             </div>
 
-            <div style={styles.field}>
-                <label style={styles.label}>Exam Period *</label>
+            <div style={s.field}>
+                <label style={s.label}>Exam Period *</label>
                 <select
                     name="examPeriodId"
                     value={formData.examPeriodId}
                     onChange={handleChange}
-                    style={styles.select}
+                    style={s.select}
                     required
                 >
                     <option value="">— Select exam period —</option>
@@ -81,11 +73,11 @@ export default function ExamForm({ onSubmit, onCancel, initialData = null }) {
                 </select>
             </div>
 
-            <div style={styles.buttons}>
-                <button type="button" onClick={onCancel} style={styles.cancelBtn}>
+            <div style={s.buttons}>
+                <button type="button" onClick={onCancel} style={s.cancelBtn}>
                     Cancel
                 </button>
-                <button type="submit" style={styles.submitBtn}>
+                <button type="submit" style={s.submitBtn}>
                     {initialData ? "Update" : "Add"}
                 </button>
             </div>
@@ -93,7 +85,7 @@ export default function ExamForm({ onSubmit, onCancel, initialData = null }) {
     );
 }
 
-const styles = {
+const s = {
     form: {
         display: "flex",
         flexDirection: "column",

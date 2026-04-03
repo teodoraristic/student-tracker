@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Pencil, Trash2, Plus, X, Check } from "lucide-react";
+import { Pencil, Trash2, Plus, X, Check, Lock } from "lucide-react";
+import PasswordResetModal from "../components/profile/PasswordResetModal";
 import {
   getAllSemesters,
   createSemester,
@@ -41,6 +42,8 @@ export default function ProfilePage() {
 
   const [semesterError, setSemesterError] = useState(null);
   const [examPeriodError, setExamPeriodError] = useState(null);
+
+  const [showPasswordResetModal, setShowPasswordResetModal] = useState(false);
 
   useEffect(() => {
     getAllSemesters().then(setSemesters).catch(() => {});
@@ -177,22 +180,44 @@ export default function ProfilePage() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>Profile Settings</h1>
-        <p style={styles.subtitle}>Manage your semesters and exam periods</p>
+    <div style={s.container}>
+      <div style={s.header}>
+        <h1 style={s.title}>Profile Settings</h1>
+        <p style={s.subtitle}>Manage your account and academic information</p>
+      </div>
+
+      {/* ── Security section ── */}
+      <div style={s.section}>
+        <div style={s.sectionHeader}>
+          <div>
+            <h2 style={s.sectionTitle}>Security</h2>
+            <p style={s.sectionSubtitle}>Change your password</p>
+          </div>
+          <button
+            style={s.addBtn}
+            onClick={() => setShowPasswordResetModal(true)}
+          >
+            <Lock size={16} />
+            Change Password
+          </button>
+        </div>
+        <div style={s.securityInfo}>
+          <p style={s.securityText}>
+            Keep your account secure by regularly updating your password. You can reset your password up to 3 times per hour.
+          </p>
+        </div>
       </div>
 
       {/* ── Semesters section ── */}
-      <div style={styles.section}>
-        <div style={styles.sectionHeader}>
+      <div style={s.section}>
+        <div style={s.sectionHeader}>
           <div>
-            <h2 style={styles.sectionTitle}>Semesters</h2>
-            <p style={styles.sectionSubtitle}>Organise your subjects by semester</p>
+            <h2 style={s.sectionTitle}>Semesters</h2>
+            <p style={s.sectionSubtitle}>Organise your subjects by semester</p>
           </div>
           {!showSemesterForm && (
             <button
-              style={styles.addBtn}
+              style={s.addBtn}
               onClick={() => {
                 setShowSemesterForm(true);
                 setEditingSemesterId(null);
@@ -207,22 +232,22 @@ export default function ProfilePage() {
         </div>
 
         {showSemesterForm && (
-          <div style={styles.formCard}>
-            <div style={styles.formCardHeader}>
-              <span style={styles.formCardTitle}>
+          <div style={s.formCard}>
+            <div style={s.formCardHeader}>
+              <span style={s.formCardTitle}>
                 {editingSemesterId != null ? "Edit Semester" : "New Semester"}
               </span>
-              <button style={styles.iconBtn} onClick={handleCancelSemester}>
+              <button style={s.iconBtn} onClick={handleCancelSemester}>
                 <X size={16} />
               </button>
             </div>
-            {semesterError && <div style={styles.errorMsg}>{semesterError}</div>}
-            <form onSubmit={handleSemesterSubmit} style={styles.form}>
-              <div style={styles.formRow}>
-                <div style={styles.field}>
-                  <label style={styles.label}>Name *</label>
+            {semesterError && <div style={s.errorMsg}>{semesterError}</div>}
+            <form onSubmit={handleSemesterSubmit} style={s.form}>
+              <div style={s.formRow}>
+                <div style={s.field}>
+                  <label style={s.label}>Name *</label>
                   <input
-                    style={styles.input}
+                    style={s.input}
                     type="text"
                     name="name"
                     value={semesterForm.name}
@@ -231,10 +256,10 @@ export default function ProfilePage() {
                     required
                   />
                 </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Type *</label>
+                <div style={s.field}>
+                  <label style={s.label}>Type *</label>
                   <select
-                    style={styles.select}
+                    style={s.select}
                     name="type"
                     value={semesterForm.type}
                     onChange={handleSemesterChange}
@@ -244,10 +269,10 @@ export default function ProfilePage() {
                     <option value="SUMMER">SUMMER</option>
                   </select>
                 </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Academic Year *</label>
+                <div style={s.field}>
+                  <label style={s.label}>Academic Year *</label>
                   <input
-                    style={styles.input}
+                    style={s.input}
                     type="text"
                     name="academicYear"
                     value={semesterForm.academicYear}
@@ -257,21 +282,21 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-              <div style={styles.formRow}>
-                <div style={styles.field}>
-                  <label style={styles.label}>Start Date (optional)</label>
+              <div style={s.formRow}>
+                <div style={s.field}>
+                  <label style={s.label}>Start Date (optional)</label>
                   <input
-                    style={styles.input}
+                    style={s.input}
                     type="date"
                     name="startDate"
                     value={semesterForm.startDate}
                     onChange={handleSemesterChange}
                   />
                 </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>End Date (optional)</label>
+                <div style={s.field}>
+                  <label style={s.label}>End Date (optional)</label>
                   <input
-                    style={styles.input}
+                    style={s.input}
                     type="date"
                     name="endDate"
                     value={semesterForm.endDate}
@@ -279,11 +304,11 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-              <div style={styles.formActions}>
-                <button type="button" style={styles.cancelBtn} onClick={handleCancelSemester}>
+              <div style={s.formActions}>
+                <button type="button" style={s.cancelBtn} onClick={handleCancelSemester}>
                   Cancel
                 </button>
-                <button type="submit" style={styles.submitBtn}>
+                <button type="submit" style={s.submitBtn}>
                   <Check size={15} />
                   {editingSemesterId != null ? "Update" : "Add"}
                 </button>
@@ -293,18 +318,18 @@ export default function ProfilePage() {
         )}
 
         {semesters.length === 0 && !showSemesterForm && (
-          <div style={styles.emptyState}>No semesters added yet.</div>
+          <div style={s.emptyState}>No semesters added yet.</div>
         )}
 
-        <div style={styles.list}>
+        <div style={s.list}>
           {semesters.map((s) => (
-            <div key={s.id} style={styles.listItem}>
-              <div style={styles.listItemLeft}>
-                <div style={styles.listItemName}>{s.name}</div>
-                <div style={styles.listItemMeta}>
+            <div key={s.id} style={s.listItem}>
+              <div style={s.listItemLeft}>
+                <div style={s.listItemName}>{s.name}</div>
+                <div style={s.listItemMeta}>
                   <span
                     style={{
-                      ...styles.typeBadge,
+                      ...s.typeBadge,
                       background: s.type === "WINTER" ? "var(--color-future-bg)" : "var(--color-due-soon-bg)",
                       color: s.type === "WINTER" ? "var(--color-future)" : "var(--color-due-soon)",
                       border: `1px solid ${s.type === "WINTER" ? "var(--color-future)" : "var(--color-due-soon)"}`,
@@ -312,20 +337,20 @@ export default function ProfilePage() {
                   >
                     {s.type}
                   </span>
-                  <span style={styles.listItemYear}>{s.academicYear}</span>
+                  <span style={s.listItemYear}>{s.academicYear}</span>
                   {(s.startDate || s.endDate) && (
-                    <span style={styles.listItemDates}>
+                    <span style={s.listItemDates}>
                       {formatDate(s.startDate)} – {formatDate(s.endDate)}
                     </span>
                   )}
                 </div>
               </div>
-              <div style={styles.listItemActions}>
-                <button style={styles.iconBtn} onClick={() => handleEditSemester(s)} title="Edit">
+              <div style={s.listItemActions}>
+                <button style={s.iconBtn} onClick={() => handleEditSemester(s)} title="Edit">
                   <Pencil size={15} />
                 </button>
                 <button
-                  style={{ ...styles.iconBtn, color: "var(--color-overdue)" }}
+                  style={{ ...s.iconBtn, color: "var(--color-overdue)" }}
                   onClick={() => handleDeleteSemester(s.id)}
                   title="Delete"
                 >
@@ -338,15 +363,15 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Exam Periods section ── */}
-      <div style={styles.section}>
-        <div style={styles.sectionHeader}>
+      <div style={s.section}>
+        <div style={s.sectionHeader}>
           <div>
-            <h2 style={styles.sectionTitle}>Exam Periods</h2>
-            <p style={styles.sectionSubtitle}>Track when your exams take place</p>
+            <h2 style={s.sectionTitle}>Exam Periods</h2>
+            <p style={s.sectionSubtitle}>Track when your exams take place</p>
           </div>
           {!showExamPeriodForm && (
             <button
-              style={styles.addBtn}
+              style={s.addBtn}
               onClick={() => {
                 setShowExamPeriodForm(true);
                 setEditingExamPeriodId(null);
@@ -361,22 +386,22 @@ export default function ProfilePage() {
         </div>
 
         {showExamPeriodForm && (
-          <div style={styles.formCard}>
-            <div style={styles.formCardHeader}>
-              <span style={styles.formCardTitle}>
+          <div style={s.formCard}>
+            <div style={s.formCardHeader}>
+              <span style={s.formCardTitle}>
                 {editingExamPeriodId != null ? "Edit Exam Period" : "New Exam Period"}
               </span>
-              <button style={styles.iconBtn} onClick={handleCancelExamPeriod}>
+              <button style={s.iconBtn} onClick={handleCancelExamPeriod}>
                 <X size={16} />
               </button>
             </div>
-            {examPeriodError && <div style={styles.errorMsg}>{examPeriodError}</div>}
-            <form onSubmit={handleExamPeriodSubmit} style={styles.form}>
-              <div style={styles.formRow}>
-                <div style={styles.field}>
-                  <label style={styles.label}>Name *</label>
+            {examPeriodError && <div style={s.errorMsg}>{examPeriodError}</div>}
+            <form onSubmit={handleExamPeriodSubmit} style={s.form}>
+              <div style={s.formRow}>
+                <div style={s.field}>
+                  <label style={s.label}>Name *</label>
                   <input
-                    style={styles.input}
+                    style={s.input}
                     type="text"
                     name="name"
                     value={examPeriodForm.name}
@@ -385,10 +410,10 @@ export default function ProfilePage() {
                     required
                   />
                 </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Start Date *</label>
+                <div style={s.field}>
+                  <label style={s.label}>Start Date *</label>
                   <input
-                    style={styles.input}
+                    style={s.input}
                     type="date"
                     name="startDate"
                     value={examPeriodForm.startDate}
@@ -396,10 +421,10 @@ export default function ProfilePage() {
                     required
                   />
                 </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>End Date *</label>
+                <div style={s.field}>
+                  <label style={s.label}>End Date *</label>
                   <input
-                    style={styles.input}
+                    style={s.input}
                     type="date"
                     name="endDate"
                     value={examPeriodForm.endDate}
@@ -408,11 +433,11 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-              <div style={styles.formActions}>
-                <button type="button" style={styles.cancelBtn} onClick={handleCancelExamPeriod}>
+              <div style={s.formActions}>
+                <button type="button" style={s.cancelBtn} onClick={handleCancelExamPeriod}>
                   Cancel
                 </button>
-                <button type="submit" style={styles.submitBtn}>
+                <button type="submit" style={s.submitBtn}>
                   <Check size={15} />
                   {editingExamPeriodId != null ? "Update" : "Add"}
                 </button>
@@ -422,26 +447,26 @@ export default function ProfilePage() {
         )}
 
         {examPeriods.length === 0 && !showExamPeriodForm && (
-          <div style={styles.emptyState}>No exam periods added yet.</div>
+          <div style={s.emptyState}>No exam periods added yet.</div>
         )}
 
-        <div style={styles.list}>
+        <div style={s.list}>
           {examPeriods.map((ep) => (
-            <div key={ep.id} style={styles.listItem}>
-              <div style={styles.listItemLeft}>
-                <div style={styles.listItemName}>{ep.name}</div>
-                <div style={styles.listItemMeta}>
-                  <span style={styles.listItemDates}>
+            <div key={ep.id} style={s.listItem}>
+              <div style={s.listItemLeft}>
+                <div style={s.listItemName}>{ep.name}</div>
+                <div style={s.listItemMeta}>
+                  <span style={s.listItemDates}>
                     {formatDate(ep.startDate)} – {formatDate(ep.endDate)}
                   </span>
                 </div>
               </div>
-              <div style={styles.listItemActions}>
-                <button style={styles.iconBtn} onClick={() => handleEditExamPeriod(ep)} title="Edit">
+              <div style={s.listItemActions}>
+                <button style={s.iconBtn} onClick={() => handleEditExamPeriod(ep)} title="Edit">
                   <Pencil size={15} />
                 </button>
                 <button
-                  style={{ ...styles.iconBtn, color: "var(--color-overdue)" }}
+                  style={{ ...s.iconBtn, color: "var(--color-overdue)" }}
                   onClick={() => handleDeleteExamPeriod(ep.id)}
                   title="Delete"
                 >
@@ -452,11 +477,17 @@ export default function ProfilePage() {
           ))}
         </div>
       </div>
+
+      {/* ── Password Reset Modal ── */}
+      <PasswordResetModal
+        isOpen={showPasswordResetModal}
+        onClose={() => setShowPasswordResetModal(false)}
+      />
     </div>
   );
 }
 
-const styles = {
+const s = {
   container: {
     width: "100%",
     maxWidth: "900px",
@@ -696,5 +727,18 @@ const styles = {
     cursor: "pointer",
     color: "var(--ink-3)",
     padding: 0,
+  },
+  securityInfo: {
+    background: "var(--surface-2)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--r-md)",
+    padding: "16px",
+  },
+  securityText: {
+    fontSize: "13px",
+    color: "var(--ink-3)",
+    margin: 0,
+    lineHeight: "1.5",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 };

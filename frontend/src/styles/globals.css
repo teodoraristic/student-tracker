@@ -1,17 +1,55 @@
 :root {
-  --rose-50:  #fff0f3;
-  --rose-100: #ffd6de;
-  --rose-200: #ffadbf;
-  --rose-300: #ff85a1;
-  --rose-400: #f4607e;
-  --rose-500: #e63d62;
-  --rose-600: #c42a50;
-  --rose-700: #9a1d3d;
+  /* ── Salmon accent ── */
+  --salmon:    #f49585;
+  --salmon-bg: rgba(244, 149, 133, 0.12);
+  --teal:      #3d7080;
 
-  --ink:      #1a1523;
-  --ink-2:    #4a3f52;
-  --ink-3:    #8a7e92;
-  --ink-4:    #c4bdc8;
+  /* ── Rose aliases (backwards compat) ── */
+  --rose-50:  rgba(244,149,133,0.08);
+  --rose-100: rgba(244,149,133,0.15);
+  --rose-200: rgba(244,149,133,0.25);
+  --rose-300: #f49585;
+  --rose-400: #f49585;
+  --rose-500: #f49585;
+  --rose-600: #e07a6a;
+
+  /* ── Typography ── DARK DEFAULT */
+  --ink:   rgba(255,255,255,0.92);
+  --ink-2: rgba(255,255,255,0.62);
+  --ink-3: rgba(255,255,255,0.38);
+  --ink-4: rgba(255,255,255,0.18);
+
+  /* ── Surfaces ── DARK DEFAULT */
+  --surface:   #1c1c1c;
+  --surface-2: #151515;
+  --surface-3: #0f0f0f;
+
+  /* ── Borders ── */
+  --border:   rgba(255,255,255,0.07);
+  --border-2: rgba(255,255,255,0.12);
+
+  /* ── Status ── */
+  --color-done:        #34d399;
+  --color-done-bg:     rgba(52,211,153,0.1);
+  --color-due-soon:    #fbbf24;
+  --color-due-soon-bg: rgba(251,191,36,0.1);
+  --color-overdue:     #f87171;
+  --color-overdue-bg:  rgba(248,113,113,0.1);
+  --color-future:      #60a5fa;
+  --color-future-bg:   rgba(96,165,250,0.1);
+
+  /* ── Radii ── */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+}
+
+[data-theme="light"] {
+  --ink:   #1a1523;
+  --ink-2: #4a3f52;
+  --ink-3: #8a7e92;
+  --ink-4: #c4bdc8;
 
   --surface:   #ffffff;
   --surface-2: #f9f7fa;
@@ -20,42 +58,17 @@
   --border:   #e8e4ec;
   --border-2: #d4cedd;
 
-  --color-done:       #0a7c5c;
-  --color-done-bg:    #e8f7f2;
-  --color-due-soon:   #b45309;
-  --color-due-soon-bg:#fef3e0;
-  --color-overdue:    #c0392b;
-  --color-overdue-bg: #fdecea;
-  --color-future:     #1a5fb4;
-  --color-future-bg:  #eaf1fc;
+  --rose-50:  #fff0f3;
+  --rose-100: #ffd6de;
 
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 16px;
-  --r-xl: 24px;
-}
-
-[data-theme="dark"] {
-  --ink:      #f0ecf5;
-  --ink-2:    #c4bdc8;
-  --ink-3:    #8a7e92;
-  --ink-4:    #4a3f52;
-  --surface:   #1a1523;
-  --surface-2: #221b2e;
-  --surface-3: #2c2340;
-  --border:   #3a2e4a;
-  --border-2: #4e4060;
-  --color-done:       #34d399;
-  --color-done-bg:    #0a3025;
-  --color-due-soon:   #fbbf24;
-  --color-due-soon-bg:#2d1e00;
-  --color-overdue:    #f87171;
-  --color-overdue-bg: #2d0f0f;
-  --color-future:     #60a5fa;
-  --color-future-bg:  #0d1e3a;
-  --rose-50:  #2d0f1a;
-  --rose-100: #5c1f35;
-  --rose-500: #ff7a96;
+  --color-done:        #0a7c5c;
+  --color-done-bg:     #e8f7f2;
+  --color-due-soon:    #b45309;
+  --color-due-soon-bg: #fef3e0;
+  --color-overdue:     #c0392b;
+  --color-overdue-bg:  #fdecea;
+  --color-future:      #1a5fb4;
+  --color-future-bg:   #eaf1fc;
 }
 
 *, *::before, *::after {
@@ -78,28 +91,14 @@ html, body {
   width: 100%;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-2);
-  border-radius: 99px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-4);
-}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
-/* Focus ring */
 :focus-visible {
-  outline: 2px solid var(--rose-400);
+  outline: 2px solid var(--salmon);
   outline-offset: 2px;
 }
 
-a {
-  color: inherit;
-}
+a { color: inherit; }

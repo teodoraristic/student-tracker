@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getSubjectById, deleteSubject, updateSubject, finalizeSubject, resetSubjectStatus } from "../services/subjectService";
 import { getTasksBySubjectId, createTask } from "../services/taskService";
 import { getAllSemesters } from "../services/semesterService";
+import { logError } from "../utils/logger";
 import SubjectHero from "../components/subjects/SubjectHero";
 import SubjectTasksSection from "../components/subjects/SubjectTasksSection";
 import FinalizeModal from "../components/subjects/FinalizeModal";
@@ -41,7 +42,7 @@ export default function SubjectDetailsPage() {
         setTasks(tasksData);
         setSemesters(semestersData);
       } catch (err) {
-        console.error("Failed to fetch data:", err);
+        logError("SubjectDetailsPage", "Failed to fetch data", err);
         setError("Failed to load subject details");
       } finally {
         setLoading(false);
@@ -73,7 +74,7 @@ export default function SubjectDetailsPage() {
       setTasks([...tasks, newTask]);
       setIsModalOpen(false);
     } catch (err) {
-      console.error("Failed to create task:", err);
+      logError("SubjectDetailsPage", "Failed to create task", err);
       alert("Failed to create assignment. Please try again.");
     }
   };
@@ -84,7 +85,7 @@ export default function SubjectDetailsPage() {
       setTasks([...tasks, newTask]);
       setIsExamModalOpen(false);
     } catch (err) {
-      console.error("Failed to create exam:", err);
+      logError("SubjectDetailsPage", "Failed to create exam", err);
       alert("Failed to create exam. Please try again.");
     }
   };
@@ -101,7 +102,7 @@ export default function SubjectDetailsPage() {
       await deleteSubject(Number(id));
       navigate("/subjects");
     } catch (err) {
-      console.error("Failed to delete subject:", err);
+      logError("SubjectDetailsPage", "Failed to delete subject", err);
       alert("Failed to delete subject. Please try again.");
     }
   };
@@ -112,7 +113,7 @@ export default function SubjectDetailsPage() {
       setSubject(updated);
       setIsEditModalOpen(false);
     } catch (err) {
-      console.error("Failed to update subject:", err);
+      logError("SubjectDetailsPage", "Failed to update subject", err);
       alert("Failed to update subject. Please try again.");
     }
   };

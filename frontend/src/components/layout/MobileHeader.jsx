@@ -1,55 +1,36 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Moon, Sun, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
+import { SALMON } from "../../utils/colors";
 
 export default function MobileHeader() {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem("theme") || "light";
-    document.documentElement.setAttribute("data-theme", saved);
-    return saved === "dark";
-  });
 
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    const theme = next ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const handleLogout = () => { logout(); navigate("/login"); };
 
   const initials = user?.firstName && user?.lastName
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
     : (user?.email?.[0] || "S").toUpperCase();
 
   return (
-    <header style={styles.header}>
+    <header style={s.header}>
       <Link to="/home" style={{ display: "flex", alignItems: "center" }}>
-        <img src="/logo.png" alt="SemesterOS" style={styles.logo} />
+        <img src="/logo.png" alt="SemesterOS" style={s.logo} />
       </Link>
-      <div style={styles.actions}>
-        <button onClick={toggleDark} style={styles.iconBtn} title="Toggle dark mode">
-          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      <div style={s.actions}>
+        <button onClick={handleLogout} style={s.iconBtn} title="Logout">
+          <LogOut size={17} color="rgba(255,255,255,0.4)" />
         </button>
-        <button onClick={handleLogout} style={styles.iconBtn} title="Logout">
-          <LogOut size={18} />
-        </button>
-        <Link to="/profile" style={styles.avatar}>
-          <span style={styles.initials}>{initials}</span>
+        <Link to="/profile" style={s.avatar}>
+          <span style={s.initials}>{initials}</span>
         </Link>
       </div>
     </header>
   );
 }
 
-const styles = {
+const s = {
   header: {
     position: "sticky",
     top: 0,
@@ -58,45 +39,44 @@ const styles = {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "10px 16px",
-    background: "var(--surface-2)",
-    borderBottom: "1px solid var(--border)",
+    background: "#151515",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
   },
   logo: {
-    height: "32px",
+    height: 30,
     width: "auto",
     objectFit: "contain",
   },
   actions: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: 8,
   },
   iconBtn: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: "36px",
-    height: "36px",
+    width: 34,
+    height: 34,
     background: "transparent",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--r-sm)",
-    color: "var(--ink-3)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: 8,
     cursor: "pointer",
   },
   avatar: {
-    width: "32px",
-    height: "32px",
+    width: 32,
+    height: 32,
     borderRadius: "50%",
-    background: "var(--rose-50)",
+    background: "rgba(244,149,133,0.15)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     textDecoration: "none",
   },
   initials: {
-    fontSize: "11px",
-    fontWeight: "700",
-    color: "var(--rose-500)",
+    fontSize: 11,
+    fontWeight: 700,
+    color: SALMON,
     fontFamily: "'DM Sans', system-ui, sans-serif",
   },
 };

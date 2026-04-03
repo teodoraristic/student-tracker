@@ -18,3 +18,20 @@ export const validateToken = async () => {
 export const logoutApi = async () => {
   await api.post("/auth/logout");
 };
+
+export const changePassword = async (currentPassword, newPassword, confirmPassword) => {
+  await api.post("/auth/change-password", {
+    currentPassword,
+    newPassword,
+    confirmPassword,
+  });
+};
+
+/**
+ * Refresh the access token using the refresh token
+ * Returns new access token and new refresh token (rotated)
+ */
+export const refreshAccessToken = async (refreshToken) => {
+  const response = await api.post("/auth/refresh", { refreshToken });
+  return response.data; // { accessToken, refreshToken }
+};

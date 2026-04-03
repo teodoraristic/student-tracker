@@ -3,6 +3,7 @@ import { getAllSubjects } from "../services/subjectService";
 import { getAllTasks } from "../services/taskService";
 import { getSubtasksByTaskId } from "../services/subtaskService";
 import { logStudySession, getTodaySessions } from "../services/studySessionService";
+import { logError } from "../utils/logger";
 import {
   Play, Pause, RotateCcw, BookOpen, Clock,
   CheckSquare, ChevronDown, FlameKindling,
@@ -70,7 +71,7 @@ export default function StudyRoomPage() {
         setTasks(tsks);
         setTodaySessions(hist);
       } catch (err) {
-        console.error("Failed to load study room data:", err);
+        logError("StudyRoomPage", "Failed to load study room data", err);
       }
     };
     load();
@@ -85,7 +86,7 @@ export default function StudyRoomPage() {
         setSubtasks(data.filter((s) => !s.done));
         setSelectedSubtask(null);
       })
-      .catch(console.error)
+      .catch(err => logError("StudyRoomPage", "Failed to load subtasks", err))
       .finally(() => setLoadingSubtasks(false));
   }, [selectedTask]);
 
@@ -174,7 +175,7 @@ export default function StudyRoomPage() {
       setLastLogged(saved);
       setTimeout(() => setLastLogged(null), 3000);
     } catch (err) {
-      console.error("Failed to log session:", err);
+      logError("StudyRoomPage", "Failed to log session", err);
     } finally {
       setLogging(false);
     }
@@ -218,15 +219,15 @@ export default function StudyRoomPage() {
     : null;
 
   return (
-    <div style={styles.container}>
+    <div style={s.container}>
 
       {/* ── header ────────────────────────────────────────────────────────── */}
-      <div style={styles.header}>
-        <div style={styles.headerLeft}>
+      <div style={s.header}>
+        <div style={s.headerLeft}>
           <FlameKindling size={26} color="var(--rose-400)" />
           <div>
-            <h1 style={styles.title}>Study Room</h1>
-            <p style={styles.subtitle}>
+            <h1 style={s.title}>Study Room</h1>
+            <p style={s.subtitle}>
               {sessions > 0
                 ? `${sessions} session${sessions !== 1 ? "s" : ""} completed today`
                 : "Start a focus session to begin tracking"}
@@ -234,25 +235,25 @@ export default function StudyRoomPage() {
           </div>
         </div>
         {todaySessions.length > 0 && (
-          <div style={styles.totalBadge}>
+          <div style={s.totalBadge}>
             <Clock size={14} color="var(--rose-400)" />
             <span>{fmtDuration(todayTotalSec)} studied today</span>
           </div>
         )}
       </div>
 
-      <div style={styles.columns}>
+      <div style={s.columns}>
 
         {/* ── LEFT — Timer ─────────────────────────────────────────────────── */}
-        <div style={styles.timerCard}>
+        <div style={s.timerCard}>
 
           {/* mode tabs */}
-          <div style={styles.tabs}>
+          <div style={s.tabs}>
             {Object.entries(MODES).map(([key, m]) => (
               <button
                 key={key}
                 style={{
-                  ...styles.tab,
+                  ...s.tab,
                   ...(mode === key
                     ? { background: m.bg, color: m.color, borderColor: m.color + "50" }
                     : {}),
@@ -265,7 +266,7 @@ export default function StudyRoomPage() {
           </div>
 
           {/* ring */}
-          <div style={styles.ringWrap}>
+          <div style={s.ringWrap}>
             <svg width="200" height="200" style={{ transform: "rotate(-90deg)" }}>
               <circle cx="100" cy="100" r="88" fill="none" stroke="var(--border)" strokeWidth="10" />
               <circle
@@ -277,10 +278,10 @@ export default function StudyRoomPage() {
                 style={{ transition: "stroke-dashoffset 0.8s ease" }}
               />
             </svg>
-            <div style={styles.timeOverlay}>
-              <span style={{ ...styles.timeText, color: cfg.color }}>{mins}:{secs}</span>
+            <div style={s.timeOverlay}>
+              <span style={{ ...s.timeText, color: cfg.color }}>{mins}:{secs}</span>
               {running && (
-                <span style={{ ...styles.modeLabel, color: cfg.color }}>
+                <span style={{ ...s.modeLabel, color: cfg.color }}>
                   {mode === "work" ? "Focusing…" : "On break"}
                 </span>
               )}
@@ -288,19 +289,19 @@ export default function StudyRoomPage() {
           </div>
 
           {/* controls */}
-          <div style={styles.controls}>
-            <button style={styles.resetBtn} onClick={reset} title="Reset">
+          <div style={s.controls}>
+            <button style={s.resetBtn} onClick={reset} title="Reset">
               <RotateCcw size={16} />
             </button>
             <button
-              style={{ ...styles.playBtn, background: cfg.color }}
+              style={{ ...s.playBtn, background: cfg.color }}
               onClick={() => setRunning((r) => !r)}
             >
               {running ? <Pause size={20} /> : <Play size={20} />}
               {running ? "Pause" : secondsLeft === total ? "Start" : "Resume"}
             </button>
             {running && mode === "work" && (
-              <button style={styles.endBtn} onClick={handleManualEnd} title="End session now">
+              <button style={s.endBtn} onClick={handleManualEnd} title="End session now">
                 End
               </button>
             )}
@@ -308,7 +309,7 @@ export default function StudyRoomPage() {
 
           {/* logged toast */}
           {(lastLogged || logging) && (
-            <div style={styles.toast}>
+            <div style={s.toast}>
               {logging
                 ? "Saving session…"
                 : `Session logged · ${fmtDuration(lastLogged.durationSeconds)}`}
@@ -317,22 +318,22 @@ export default function StudyRoomPage() {
         </div>
 
         {/* ── RIGHT — Selector + History ────────────────────────────────────── */}
-        <div style={styles.rightCol}>
+        <div style={s.rightCol}>
 
           {/* What to study */}
-          <div style={styles.card}>
-            <h2 style={styles.cardTitle}>
+          <div style={s.card}>
+            <h2 style={s.cardTitle}>
               <BookOpen size={17} color="var(--rose-400)" />
               What are you studying?
             </h2>
 
             {/* Subject selector */}
-            <div style={styles.selectorRow}>
-              <label style={styles.selectorLabel}>Subject</label>
-              <div style={styles.selectWrap}>
+            <div style={s.selectorRow}>
+              <label style={s.selectorLabel}>Subject</label>
+              <div style={s.selectWrap}>
                 <select
                   style={{
-                    ...styles.select,
+                    ...s.select,
                     ...(dc ? { borderColor: dc.text + "50", color: dc.text } : {}),
                   }}
                   value={selectedSubject?.id ?? ""}
@@ -349,17 +350,17 @@ export default function StudyRoomPage() {
                     <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
                 </select>
-                <ChevronDown size={14} style={styles.selectArrow} />
+                <ChevronDown size={14} style={s.selectArrow} />
               </div>
             </div>
 
             {/* Task selector */}
             {selectedSubject && (
-              <div style={styles.selectorRow}>
-                <label style={styles.selectorLabel}>Task</label>
-                <div style={styles.selectWrap}>
+              <div style={s.selectorRow}>
+                <label style={s.selectorLabel}>Task</label>
+                <div style={s.selectWrap}>
                   <select
-                    style={styles.select}
+                    style={s.select}
                     value={selectedTask?.id ?? ""}
                     onChange={(e) => {
                       const t = filteredTasks.find((t) => t.id === Number(e.target.value)) || null;
@@ -372,18 +373,18 @@ export default function StudyRoomPage() {
                       <option key={t.id} value={t.id}>{t.title}</option>
                     ))}
                   </select>
-                  <ChevronDown size={14} style={styles.selectArrow} />
+                  <ChevronDown size={14} style={s.selectArrow} />
                 </div>
               </div>
             )}
 
             {/* Subtask selector */}
             {selectedTask && (
-              <div style={styles.selectorRow}>
-                <label style={styles.selectorLabel}>Subtask</label>
-                <div style={styles.selectWrap}>
+              <div style={s.selectorRow}>
+                <label style={s.selectorLabel}>Subtask</label>
+                <div style={s.selectWrap}>
                   <select
-                    style={styles.select}
+                    style={s.select}
                     value={selectedSubtask?.id ?? ""}
                     onChange={(e) => {
                       const s = subtasks.find((s) => s.id === Number(e.target.value)) || null;
@@ -396,7 +397,7 @@ export default function StudyRoomPage() {
                       <option key={s.id} value={s.id}>{s.title}</option>
                     ))}
                   </select>
-                  <ChevronDown size={14} style={styles.selectArrow} />
+                  <ChevronDown size={14} style={s.selectArrow} />
                 </div>
               </div>
             )}
@@ -404,12 +405,12 @@ export default function StudyRoomPage() {
             {/* Currently studying summary */}
             {selectedSubject && (
               <div style={{
-                ...styles.studyingBadge,
+                ...s.studyingBadge,
                 background: dc?.bg || "var(--surface-2)",
                 borderColor: dc?.text || "var(--border)",
               }}>
-                <div style={{ ...styles.studyingDot, background: dc?.text || "var(--ink-3)" }} />
-                <span style={{ ...styles.studyingText, color: dc?.text || "var(--ink-3)" }}>
+                <div style={{ ...s.studyingDot, background: dc?.text || "var(--ink-3)" }} />
+                <span style={{ ...s.studyingText, color: dc?.text || "var(--ink-3)" }}>
                   {selectedSubtask
                     ? selectedSubtask.title
                     : selectedTask
@@ -421,37 +422,37 @@ export default function StudyRoomPage() {
           </div>
 
           {/* Today's sessions history */}
-          <div style={styles.card}>
-            <h2 style={styles.cardTitle}>
+          <div style={s.card}>
+            <h2 style={s.cardTitle}>
               <CheckSquare size={17} color="var(--rose-400)" />
               Today's Sessions
               {todaySessions.length > 0 && (
-                <span style={styles.sessionCount}>{todaySessions.length}</span>
+                <span style={s.sessionCount}>{todaySessions.length}</span>
               )}
             </h2>
 
             {todaySessions.length === 0 ? (
-              <div style={styles.emptyHistory}>
+              <div style={s.emptyHistory}>
                 <Clock size={32} color="var(--ink-4)" />
-                <p style={styles.emptyText}>No sessions yet today.</p>
+                <p style={s.emptyText}>No sessions yet today.</p>
               </div>
             ) : (
-              <div style={styles.historyList}>
+              <div style={s.historyList}>
                 {todaySessions.map((s) => (
-                  <div key={s.id} style={styles.historyItem}>
-                    <div style={styles.historyDuration}>
+                  <div key={s.id} style={s.historyItem}>
+                    <div style={s.historyDuration}>
                       {fmtDuration(s.durationSeconds)}
                     </div>
-                    <div style={styles.historyMeta}>
+                    <div style={s.historyMeta}>
                       {s.subtaskTitle
-                        ? <span style={styles.historyPrimary}>{s.subtaskTitle}</span>
-                        : <span style={styles.historyPrimary}>Free session</span>
+                        ? <span style={s.historyPrimary}>{s.subtaskTitle}</span>
+                        : <span style={s.historyPrimary}>Free session</span>
                       }
                       {s.subjectName && (
-                        <span style={styles.historySecondary}>{s.subjectName}</span>
+                        <span style={s.historySecondary}>{s.subjectName}</span>
                       )}
                     </div>
-                    <span style={styles.historyTime}>{fmtTime(s.completedAt)}</span>
+                    <span style={s.historyTime}>{fmtTime(s.completedAt)}</span>
                   </div>
                 ))}
               </div>
@@ -465,7 +466,7 @@ export default function StudyRoomPage() {
 }
 
 // ── styles ────────────────────────────────────────────────────────────────────
-const styles = {
+const s = {
   container: { width: "100%", maxWidth: "1200px", margin: "0 auto" },
 
   header: {

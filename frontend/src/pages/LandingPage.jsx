@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { SALMON, BLUSH, TEAL, WHITE, INK, INK2, DARK } from "../utils/colors";
 
 const useLoop = (delay = 2800) => {
   const [key, setKey] = useState(0);
@@ -30,14 +31,6 @@ const loopWords = [
    Salmon full-bleed bg · huge lowercase type
    Browser mockup · floating sections
 ───────────────────────────────────────────── */
-
-const SALMON  = "#f49585";   // feature sections bg
-const BLUSH   = "#fce8e4";   // light sections
-const TEAL    = "#3d7080";   // CTA button
-const WHITE   = "#ffffff";
-const INK     = "#2d1f2e";   // text on light bg
-const INK2    = "#7a6b82";
-const DARK    = "#1e1018";   // hero dark top (nav tracking)
 
 export default function LandingPage() {
   const nav = useNavigate();
@@ -220,7 +213,7 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-                <p style={s.appSection} style={{ marginTop: 20 }}>Upcoming</p>
+                <p style={{ ...s.appSection, marginTop: 20 }}>Upcoming</p>
                 {upcomingItems.map(u => (
                   <div key={u.title} style={s.appUpcoming}>
                     <div style={{ ...s.appUpcomingDot, background: u.color }} />

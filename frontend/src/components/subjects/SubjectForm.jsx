@@ -21,39 +21,39 @@ export default function SubjectForm({ onSubmit, onCancel, initialData = null, se
     };
 
     return (
-        <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.field}>
-                <label style={styles.label}>Subject Name *</label>
+        <form onSubmit={handleSubmit} style={s.form}>
+            <div style={s.field}>
+                <label style={s.label}>Subject Name *</label>
                 <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    style={styles.input}
+                    style={s.input}
                     placeholder="e.g. Mathematics 1"
                     required
                 />
             </div>
 
-            <div style={styles.field}>
-                <label style={styles.label}>Website (optional)</label>
+            <div style={s.field}>
+                <label style={s.label}>Website (optional)</label>
                 <input
                     type="url"
                     name="website"
                     value={formData.website}
                     onChange={handleChange}
-                    style={styles.input}
+                    style={s.input}
                     placeholder="https://..."
                 />
             </div>
 
-            <div style={styles.field}>
-                <label style={styles.label}>Semester (optional)</label>
+            <div style={s.field}>
+                <label style={s.label}>Semester (optional)</label>
                 <select
                     name="semesterId"
                     value={formData.semesterId || ""}
                     onChange={handleChange}
-                    style={styles.select}
+                    style={s.select}
                 >
                     <option value="">No semester</option>
                     {semesters.map(s => (
@@ -62,11 +62,11 @@ export default function SubjectForm({ onSubmit, onCancel, initialData = null, se
                 </select>
             </div>
 
-            <div style={styles.buttons}>
-                <button type="button" onClick={onCancel} style={styles.cancelBtn}>
+            <div style={s.buttons}>
+                <button type="button" onClick={onCancel} style={s.cancelBtn}>
                     Cancel
                 </button>
-                <button type="submit" style={styles.submitBtn}>
+                <button type="submit" style={s.submitBtn}>
                     {initialData ? "Update" : "Add"}
                 </button>
             </div>
@@ -74,7 +74,7 @@ export default function SubjectForm({ onSubmit, onCancel, initialData = null, se
     );
 }
 
-const styles = {
+const s = {
     form: {
         display: "flex",
         flexDirection: "column",

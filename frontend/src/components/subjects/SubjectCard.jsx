@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import { SUBJECT_COLORS } from "../../utils/subjectColors";
+import { parseDateLocal } from "../../utils/dateUtils";
 
 const useIsDark = () => {
   const [dark, setDark] = useState(
@@ -18,13 +19,6 @@ const useIsDark = () => {
     return () => observer.disconnect();
   }, []);
   return dark;
-};
-
-const parseDateLocal = (raw) => {
-  if (!raw) return null;
-  if (Array.isArray(raw)) return new Date(raw[0], raw[1] - 1, raw[2]);
-  const [y, m, d] = String(raw).split("-").map(Number);
-  return new Date(y, m - 1, d);
 };
 
 const formatNextDue = (dueDate) => {
@@ -56,10 +50,10 @@ export default function SubjectCard({ subject, nextDeadlineTask, completionPct, 
   const accentColor = subject.color ?? SUBJECT_COLORS[(subject.id || 0) % SUBJECT_COLORS.length];
 
   const cardStyle = {
-    ...styles.card,
+    ...s.card,
     border: `1.5px solid ${accentColor}`,
     background: isDark ? `${accentColor}18` : `${accentColor}12`,
-    ...(hovered ? styles.cardHover : {}),
+    ...(hovered ? s.cardHover : {}),
   };
 
   const taskCount = subject.totalTasks || 0;
@@ -84,27 +78,27 @@ export default function SubjectCard({ subject, nextDeadlineTask, completionPct, 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={styles.content}>
+      <div style={s.content}>
 
         {/* ROW 1: name + status badge */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", marginBottom: "6px" }}>
-          <h3 style={styles.title}>{subject.name}</h3>
+          <h3 style={s.title}>{subject.name}</h3>
           {isFinalized && (
-            <span style={{ ...styles.statusBadge, background: statusCfg.bg, color: statusCfg.color, border: `1px solid ${statusCfg.border}` }}>
+            <span style={{ ...s.statusBadge, background: statusCfg.bg, color: statusCfg.color, border: `1px solid ${statusCfg.border}` }}>
               {statusCfg.label}
             </span>
           )}
         </div>
 
         {/* ROW 2: task meta */}
-        <div style={styles.taskMeta}>{completedCount}/{taskCount} tasks completed</div>
+        <div style={s.taskMeta}>{completedCount}/{taskCount} tasks completed</div>
 
         {/* ROW 3: progress bar + percentage */}
-        <div style={styles.progressRow}>
-          <div style={styles.progressBar}>
-            <div style={{ ...styles.progressFill, width: `${pct}%`, background: barColor }} />
+        <div style={s.progressRow}>
+          <div style={s.progressBar}>
+            <div style={{ ...s.progressFill, width: `${pct}%`, background: barColor }} />
           </div>
-          <span style={styles.progressPct}>{pct}%</span>
+          <span style={s.progressPct}>{pct}%</span>
         </div>
 
         {/* ROW 4: deadline */}
@@ -114,21 +108,21 @@ export default function SubjectCard({ subject, nextDeadlineTask, completionPct, 
             ? nextDeadlineTask.title.slice(0, 22) + "…"
             : nextDeadlineTask.title;
           return (
-            <div style={{ ...styles.deadlineRow, background: dl.bg, marginTop: "10px" }}>
+            <div style={{ ...s.deadlineRow, background: dl.bg, marginTop: "10px" }}>
               <Calendar size={12} style={{ color: dl.color, flexShrink: 0 }} />
-              <span style={styles.deadlineTitle}>{title}</span>
-              <span style={{ ...styles.deadlineDue, color: dl.color }}>{dl.text}</span>
+              <span style={s.deadlineTitle}>{title}</span>
+              <span style={{ ...s.deadlineDue, color: dl.color }}>{dl.text}</span>
             </div>
           );
         })()}
 
         {/* ROW 5: grade pill */}
         {subjectStatus === "PASSED" && subject.finalGrade != null && (
-          <div style={{ ...styles.gradeDisplay, background: statusCfg.bg, border: `1px solid ${statusCfg.border}` }}>
-            <span style={{ ...styles.gradeNumber, color: statusCfg.color }}>
+          <div style={{ ...s.gradeDisplay, background: statusCfg.bg, border: `1px solid ${statusCfg.border}` }}>
+            <span style={{ ...s.gradeNumber, color: statusCfg.color }}>
               {subject.finalGrade}
             </span>
-            <span style={{ ...styles.gradeCaption, color: statusCfg.color }}>Final Grade</span>
+            <span style={{ ...s.gradeCaption, color: statusCfg.color }}>Final Grade</span>
           </div>
         )}
 
@@ -137,7 +131,7 @@ export default function SubjectCard({ subject, nextDeadlineTask, completionPct, 
   );
 }
 
-const styles = {
+const s = {
   card: {
     borderRadius: "var(--r-lg)",
     cursor: "pointer",

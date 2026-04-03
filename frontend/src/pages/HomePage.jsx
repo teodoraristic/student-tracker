@@ -6,6 +6,7 @@ import { getAllTasks } from "../services/taskService";
 import { getSubtasksByDate, toggleSubtaskDone, updateSubtaskPlan, createSubtask } from "../services/subtaskService";
 import { getTaskBreakdown, getRiskAssessment } from "../services/aiService";
 import { toISODate, parseDateLocal } from "../utils/dateUtils";
+import { logError } from "../utils/logger";
 import {
   Calendar, Clock, CheckSquare, Square, CalendarX,
   X, ChevronDown, Check, AlertTriangle, BookOpen, ArrowRight, ExternalLink,
@@ -98,7 +99,7 @@ export default function HomePage() {
         setSubjects(subjectsData);
         setTasks(tasksData);
       } catch (err) {
-        console.error("Failed to load dashboard data:", err);
+        logError("HomePage", "Failed to load dashboard data", err);
       } finally {
         setLoading(false);
       }
@@ -112,7 +113,7 @@ export default function HomePage() {
       const data = await getSubtasksByDate(toISODate(selectedDate));
       setPlannedSubtasks(data);
     } catch (err) {
-      console.error("Failed to load planned subtasks:", err);
+      logError("HomePage", "Failed to load planned subtasks", err);
     } finally {
       setPlanLoading(false);
     }
@@ -130,7 +131,7 @@ export default function HomePage() {
         prev.map((s) => (s.id === subtask.id ? { ...s, done: !s.done } : s))
       );
     } catch (err) {
-      console.error("Failed to toggle subtask:", err);
+      logError("HomePage", "Failed to toggle subtask", err);
     }
   };
 
@@ -139,7 +140,7 @@ export default function HomePage() {
       await updateSubtaskPlan(subtaskId, null);
       setPlannedSubtasks((prev) => prev.filter((s) => s.id !== subtaskId));
     } catch (err) {
-      console.error("Failed to remove from plan:", err);
+      logError("HomePage", "Failed to remove from plan", err);
     }
   };
 
@@ -151,7 +152,7 @@ export default function HomePage() {
         setPlannedSubtasks((prev) => prev.filter((s) => s.id !== subtaskId));
       }
     } catch (err) {
-      console.error("Failed to reschedule:", err);
+      logError("HomePage", "Failed to reschedule", err);
     }
   };
 
@@ -171,7 +172,7 @@ export default function HomePage() {
       const data = await getTaskBreakdown(task.id);
       setBreakdownItems(data.subtasks || []);
     } catch (err) {
-      console.error("AI breakdown failed:", err);
+      logError("HomePage", "AI breakdown failed", err);
     } finally {
       setBreakdownLoading(false);
     }
@@ -182,7 +183,7 @@ export default function HomePage() {
       await createSubtask({ title, taskId });
       setAddedIndices((prev) => new Set([...prev, index]));
     } catch (err) {
-      console.error("Failed to add subtask:", err);
+      logError("HomePage", "Failed to add subtask", err);
     }
   };
 
@@ -271,95 +272,95 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div style={styles.centered}>
-        <span style={styles.loadingText}>Loading…</span>
+      <div style={s.centered}>
+        <span style={s.loadingText}>Loading…</span>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
+    <div style={s.container}>
 
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div style={styles.dayHeader}>
+      <div style={s.dayHeader}>
         <div>
-          <h1 style={styles.dayTitle}>
+          <h1 style={s.dayTitle}>
             {todayDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </h1>
-          <p style={styles.dayGreeting}>{greeting.text}</p>
-          <p style={styles.dayNote}>{greeting.note}</p>
+          <p style={s.dayGreeting}>{greeting.text}</p>
+          <p style={s.dayNote}>{greeting.note}</p>
         </div>
       </div>
 
       {/* ── Stat cards ─────────────────────────────────────────────── */}
-      <div style={styles.statsRow}>
+      <div style={s.statsRow}>
         {/* Card 1 — Next Assignment */}
-        <div style={styles.statCard}>
-          <span style={{ ...styles.statNum, color: daysToNextAssignment !== null ? "var(--rose-400)" : "var(--ink)" }}>
+        <div style={s.statCard}>
+          <span style={{ ...s.statNum, color: daysToNextAssignment !== null ? "var(--rose-400)" : "var(--ink)" }}>
             {daysToNextAssignment !== null ? daysToNextAssignment : "—"}
           </span>
-          <span style={styles.statLabel}>NEXT ASSIGNMENT - {nextAssignmentSubjectName && (
-            <span style={styles.statSub}>{nextAssignmentSubjectName}</span>
+          <span style={s.statLabel}>NEXT ASSIGNMENT - {nextAssignmentSubjectName && (
+            <span style={s.statSub}>{nextAssignmentSubjectName}</span>
           )}</span>
           
         </div>
 
         {/* Card 2 — Tasks Left */}
-        <div style={styles.statCard}>
-          <span style={styles.statNum}>{tasksLeftCount}</span>
-          <span style={styles.statLabel}>ASSIGNMENTS LEFT</span>
+        <div style={s.statCard}>
+          <span style={s.statNum}>{tasksLeftCount}</span>
+          <span style={s.statLabel}>ASSIGNMENTS LEFT</span>
         </div>
 
         {/* Card 3 — Subjects In Progress */}
-        <div style={styles.statCard}>
-          <span style={styles.statNum}>{inProgressCount}</span>
-          <span style={styles.statLabel}> SUBJECTS LEFT </span>
+        <div style={s.statCard}>
+          <span style={s.statNum}>{inProgressCount}</span>
+          <span style={s.statLabel}> SUBJECTS LEFT </span>
         </div>
       </div>
 
       {/* ── 2-column layout ────────────────────────────────────────────── */}
-      <div style={styles.columns}>
+      <div style={s.columns}>
 
         {/* LEFT COLUMN — Daily To-Do + AI ───────────────────────── */}
-        <div style={styles.sideCol}>
+        <div style={s.sideCol}>
 
           {/* Daily To-Do ──────────────────────────────────────────────── */}
-          <div style={styles.column}>
-            <div style={styles.colTitleRow}>
-              <h2 style={styles.colTitle}>
+          <div style={s.column}>
+            <div style={s.colTitleRow}>
+              <h2 style={s.colTitle}>
                 <CheckSquare size={16} color="var(--rose-400)" />
                 Today
               </h2>
-              <button style={styles.plannerBtn} onClick={() => navigate("/planner")}>
+              <button style={s.plannerBtn} onClick={() => navigate("/planner")}>
                 Planner <ArrowRight size={13} />
               </button>
             </div>
 
             {/* Warning */}
             {warningTasks.length > 0 && (
-              <div style={styles.warningCard}>
+              <div style={s.warningCard}>
                 <AlertTriangle size={14} style={{ flexShrink: 0 }} />
                 You have {warningTasks.length} assignment{warningTasks.length !== 1 ? "s" : ""} due soon with no study sessions planned.
               </div>
             )}
 
             {planLoading ? (
-              <div style={styles.emptyState}>
-                <span style={styles.loadingText}>Loading…</span>
+              <div style={s.emptyState}>
+                <span style={s.loadingText}>Loading…</span>
               </div>
             ) : plannedSubtasks.length === 0 ? (
-              <div style={styles.emptyState}>
+              <div style={s.emptyState}>
                 <CalendarX size={36} color="var(--ink-4)" />
-                <p style={styles.emptyText}>Nothing planned for today.</p>
-                <p style={styles.emptyHint}>Head to the Planner to schedule your study sessions.</p>
-                <p style={styles.emptyQuote}>"{emptyQuote}"</p>
+                <p style={s.emptyText}>Nothing planned for today.</p>
+                <p style={s.emptyHint}>Head to the Planner to schedule your study sessions.</p>
+                <p style={s.emptyQuote}>"{emptyQuote}"</p>
               </div>
             ) : (
-              <div style={styles.todoList}>
+              <div style={s.todoList}>
                 {pendingToday.length === 0 && doneToday.length > 0 && (
-                  <div style={styles.allDoneCard}>
+                  <div style={s.allDoneCard}>
                     <Check size={15} color="var(--color-done)" style={{ flexShrink: 0 }} />
-                    <p style={styles.allDoneText}>{doneQuote}</p>
+                    <p style={s.allDoneText}>{doneQuote}</p>
                   </div>
                 )}
                 {pendingToday.map((s) => (
@@ -375,7 +376,7 @@ export default function HomePage() {
                 {doneToday.length > 0 && (
                   <>
                     <button
-                      style={styles.doneSeparatorBtn}
+                      style={s.doneSeparatorBtn}
                       onClick={() => setCompletedExpanded((v) => !v)}
                     >
                       <span>Completed · {doneToday.length}</span>
@@ -408,28 +409,28 @@ export default function HomePage() {
         </div>{/* end LEFT COLUMN */}
 
         {/* RIGHT COLUMN — Deadlines + Pomodoro ────────────────────────── */}
-        <div style={styles.sideCol}>
+        <div style={s.sideCol}>
 
           {/* Upcoming Deadlines ───────────────────────────────────────── */}
-          <div style={styles.column}>
-            <div style={styles.colTitleRow}>
-              <h2 style={styles.colTitle}>
+          <div style={s.column}>
+            <div style={s.colTitleRow}>
+              <h2 style={s.colTitle}>
                 <Clock size={16} color="var(--rose-400)" />
                 Coming up
-                <span style={styles.monthLabel}>in {currentMonthName}</span>
+                <span style={s.monthLabel}>in {currentMonthName}</span>
               </h2>
-              <button style={styles.plannerBtn} onClick={() => navigate("/calendar")}>
+              <button style={s.plannerBtn} onClick={() => navigate("/calendar")}>
                 Calendar <ArrowRight size={13} />
               </button>
             </div>
 
             {currentMonthTasks.length === 0 ? (
-              <div style={styles.emptyState}>
+              <div style={s.emptyState}>
                 <Clock size={36} color="var(--ink-4)" />
-                <p style={styles.emptyText}>No assignments this month.</p>
+                <p style={s.emptyText}>No assignments this month.</p>
               </div>
             ) : (
-              <div style={styles.deadlineList}>
+              <div style={s.deadlineList}>
                 {(deadlinesExpanded ? currentMonthTasks : currentMonthTasks.slice(0, 3)).map((task) => {
                   const subject = subjects.find((s) => s.id === task.subjectId);
                   const due = formatDue(task.dueDate);
@@ -442,35 +443,35 @@ export default function HomePage() {
                   return (
                     <div key={task.id}>
                       <div
-                        style={styles.deadlineRow}
+                        style={s.deadlineRow}
                         onClick={() => navigate(`/subjects/${task.subjectId}`)}
                       >
-                        <div style={styles.deadlineLeft}>
-                          <span style={styles.deadlineTitle}>{task.title}</span>
-                          <div style={styles.deadlineMeta}>
-                            {subject && <span style={styles.subjectChip}>{subject.name}</span>}
+                        <div style={s.deadlineLeft}>
+                          <span style={s.deadlineTitle}>{task.title}</span>
+                          <div style={s.deadlineMeta}>
+                            {subject && <span style={s.subjectChip}>{subject.name}</span>}
                             {task.priority && (() => {
                               const pc = priorityChipColors[task.priority] || priorityChipColors.LOW;
                               return (
-                                <span style={{ ...styles.typeChip, background: pc.bg, color: pc.color }}>
+                                <span style={{ ...s.typeChip, background: pc.bg, color: pc.color }}>
                                   {task.priority}
                                 </span>
                               );
                             })()}
                           </div>
                           {totalSubs > 0 && (
-                            <div style={styles.subProgressRow}>
-                              <div style={styles.subProgressTrack}>
-                                <div style={{ ...styles.subProgressFill, width: `${subPct}%` }} />
+                            <div style={s.subProgressRow}>
+                              <div style={s.subProgressTrack}>
+                                <div style={{ ...s.subProgressFill, width: `${subPct}%` }} />
                               </div>
-                              <span style={styles.subProgressLabel}>{doneSubs}/{totalSubs} subtasks</span>
+                              <span style={s.subProgressLabel}>{doneSubs}/{totalSubs} subtasks</span>
                             </div>
                           )}
                         </div>
-                        <div style={styles.deadlineRight}>
+                        <div style={s.deadlineRight}>
                           {due && (
                             <span style={{
-                              ...styles.dueBadge,
+                              ...s.dueBadge,
                               color: due.color,
                               border: `1px solid ${due.color}40`,
                               background: due.color + "12",
@@ -480,8 +481,8 @@ export default function HomePage() {
                           )}
                           <button
                             style={{
-                              ...styles.sparkleBtn,
-                              ...(isExpanded ? styles.sparkleBtnActive : {}),
+                              ...s.sparkleBtn,
+                              ...(isExpanded ? s.sparkleBtnActive : {}),
                             }}
                             onClick={(e) => handleBreakdown(e, task)}
                             title="AI Task Breakdown"
@@ -492,30 +493,30 @@ export default function HomePage() {
                       </div>
 
                       {isExpanded && (
-                        <div style={styles.breakdownPanel}>
-                          <div style={styles.breakdownHeader}>
-                            <span style={styles.breakdownTitle}>AI Breakdown</span>
+                        <div style={s.breakdownPanel}>
+                          <div style={s.breakdownHeader}>
+                            <span style={s.breakdownTitle}>AI Breakdown</span>
                             <button
-                              style={styles.breakdownClose}
+                              style={s.breakdownClose}
                               onClick={() => { setBreakdownTaskId(null); setBreakdownItems([]); setAddedIndices(new Set()); }}
                             >
                               <X size={13} />
                             </button>
                           </div>
                           {breakdownLoading ? (
-                            <p style={styles.breakdownLoading}>Generating subtasks…</p>
+                            <p style={s.breakdownLoading}>Generating subtasks…</p>
                           ) : breakdownItems.length === 0 ? (
-                            <p style={styles.breakdownLoading}>No suggestions generated.</p>
+                            <p style={s.breakdownLoading}>No suggestions generated.</p>
                           ) : (
-                            <div style={styles.breakdownList}>
+                            <div style={s.breakdownList}>
                               {breakdownItems.map((item, i) => (
-                                <div key={i} style={styles.breakdownItem}>
-                                  <span style={styles.breakdownItemText}>{item}</span>
+                                <div key={i} style={s.breakdownItem}>
+                                  <span style={s.breakdownItemText}>{item}</span>
                                   {addedIndices.has(i) ? (
-                                    <span style={styles.breakdownAdded}><Check size={11} /> Added</span>
+                                    <span style={s.breakdownAdded}><Check size={11} /> Added</span>
                                   ) : (
                                     <button
-                                      style={styles.breakdownAddBtn}
+                                      style={s.breakdownAddBtn}
                                       onClick={() => handleAddSubtask(task.id, item, i)}
                                     >
                                       <Plus size={11} /> Add
@@ -532,7 +533,7 @@ export default function HomePage() {
                 })}
                 {currentMonthTasks.length > 3 && (
                   <button
-                    style={styles.expandBtn}
+                    style={s.expandBtn}
                     onClick={() => setDeadlinesExpanded((v) => !v)}
                   >
                     {deadlinesExpanded
@@ -681,7 +682,7 @@ function AIAssistantWidget({ tasks, subjects }) {
       );
       setBreakdownItems(data.subtasks || []);
     } catch (err) {
-      console.error("Breakdown failed:", err);
+      logError("HomePage", "Breakdown failed", err);
     } finally {
       setBreakdownLoading(false);
     }
@@ -692,14 +693,14 @@ function AIAssistantWidget({ tasks, subjects }) {
       await createSubtask({ title, taskId: Number(selectedTaskId) });
       setAddedIdxs((prev) => new Set([...prev, index]));
     } catch (err) {
-      console.error("Failed to add subtask:", err);
+      logError("HomePage", "Failed to add subtask", err);
     }
   };
 
   return (
-    <div style={styles.column}>
-      <div style={{ ...styles.colTitleRow, marginBottom: "16px" }}>
-        <h2 style={{ ...styles.colTitle, color: "#7e22ce" }}>
+    <div style={s.column}>
+      <div style={{ ...s.colTitleRow, marginBottom: "16px" }}>
+        <h2 style={{ ...s.colTitle, color: "#7e22ce" }}>
           <Sparkles size={16} color="#9333ea" />
           AI Assistant
         </h2>
@@ -790,9 +791,9 @@ function AIAssistantWidget({ tasks, subjects }) {
             <div key={i} style={aiStyles.breakdownRow}>
               <span style={aiStyles.breakdownText}>{item}</span>
               {addedIdxs.has(i) ? (
-                <span style={styles.breakdownAdded}><Check size={11} /> Added</span>
+                <span style={s.breakdownAdded}><Check size={11} /> Added</span>
               ) : (
-                <button style={styles.breakdownAddBtn} onClick={() => handleAddItem(item, i)}>
+                <button style={s.breakdownAddBtn} onClick={() => handleAddItem(item, i)}>
                   <Plus size={11} /> Add
                 </button>
               )}
@@ -849,10 +850,10 @@ function PomodoroWidget() {
   };
 
   return (
-    <div style={styles.column}>
+    <div style={s.column}>
       {/* header */}
       <div style={pomoStyles.header}>
-        <h2 style={styles.colTitle}>
+        <h2 style={s.colTitle}>
           <Clock size={16} color="var(--rose-400)" />
           Focus Timer
         </h2>
@@ -913,7 +914,7 @@ function PomodoroWidget() {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-const styles = {
+const s = {
   container: { width: "100%", maxWidth: "1400px", margin: "0 auto" },
   centered: { display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" },
   loadingText: { fontSize: "15px", color: "var(--ink-3)" },

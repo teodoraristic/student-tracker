@@ -9,25 +9,25 @@ export default function SubtaskForm({ onSubmit, onCancel, initialData = null }) 
     };
 
     return (
-        <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.field}>
-                <label style={styles.label}>Subtask Title *</label>
+        <form onSubmit={handleSubmit} style={s.form}>
+            <div style={s.field}>
+                <label style={s.label}>Subtask Title *</label>
                 <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    style={styles.input}
+                    style={s.input}
                     placeholder="e.g. Study chapters 1–3"
                     required
                     autoFocus
                 />
             </div>
 
-            <div style={styles.buttons}>
-                <button type="button" onClick={onCancel} style={styles.cancelBtn}>
+            <div style={s.buttons}>
+                <button type="button" onClick={onCancel} style={s.cancelBtn}>
                     Cancel
                 </button>
-                <button type="submit" style={styles.submitBtn}>
+                <button type="submit" style={s.submitBtn}>
                     {initialData ? "Update" : "Add"}
                 </button>
             </div>
@@ -35,7 +35,7 @@ export default function SubtaskForm({ onSubmit, onCancel, initialData = null }) 
     );
 }
 
-const styles = {
+const s = {
     form: {
         display: "flex",
         flexDirection: "column",

@@ -1,29 +1,49 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useRef } from "react";
 import { validateToken, logoutApi } from "../services/authService";
+import { logError } from "../utils/logger";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
+// Token validation cache TTL in milliseconds (5 minutes)
+const TOKEN_VALIDATION_CACHE_TTL = 5 * 60 * 1000;
+
 export function AuthProvider({ children }) {
-    const [token, setToken] = useState(() => localStorage.getItem("token"));
+    const [accessToken, setAccessToken] = useState(() => localStorage.getItem("accessToken"));
     const [user, setUser] = useState(null);
     const [isValidating, setIsValidating] = useState(true);
+    const lastValidationTimeRef = useRef(null);
 
-    // Validate token on load
+    const clearTokens = () => {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        setAccessToken(null);
+        setUser(null);
+        lastValidationTimeRef.current = null;
+    };
+
+    // Validate token on load (with caching to prevent redundant API calls)
     useEffect(() => {
         const checkToken = async () => {
-            const savedToken = localStorage.getItem("token");
+            const savedAccessToken = localStorage.getItem("accessToken");
+            const now = Date.now();
+            const lastValidationTime = lastValidationTimeRef.current;
 
-            if (savedToken) {
-                try {
-                    const userData = await validateToken();
-                    setToken(savedToken);
-                    setUser(userData);
-                } catch (error) {
-                    console.log("Token validation failed, clearing token");
-                    localStorage.removeItem("token");
-                    setToken(null);
-                    setUser(null);
+            if (savedAccessToken) {
+                // Only validate if cache expired or first time checking
+                if (!lastValidationTime || now - lastValidationTime > TOKEN_VALIDATION_CACHE_TTL) {
+                    try {
+                        const userData = await validateToken();
+                        setAccessToken(savedAccessToken);
+                        setUser(userData);
+                        lastValidationTimeRef.current = now;
+                    } catch (error) {
+                        logError("AuthContext", "Token validation failed");
+                        clearTokens();
+                    }
+                } else {
+                    // Cache is still valid, use cached state
+                    setAccessToken(savedAccessToken);
                 }
             }
 
@@ -34,21 +54,23 @@ export function AuthProvider({ children }) {
     }, []);
 
     useEffect(() => {
-        if (token) {
-            localStorage.setItem("token", token);
+        if (accessToken) {
+            localStorage.setItem("accessToken", accessToken);
         } else {
-            localStorage.removeItem("token");
+            localStorage.removeItem("accessToken");
         }
-    }, [token]);
+    }, [accessToken]);
 
-    const login = async (newToken) => {
-        localStorage.setItem("token", newToken);
-        setToken(newToken);
+    const login = async ({ accessToken: newAccessToken, refreshToken: newRefreshToken }) => {
+        localStorage.setItem("accessToken", newAccessToken);
+        localStorage.setItem("refreshToken", newRefreshToken);
+        setAccessToken(newAccessToken);
         try {
             const userData = await validateToken();
             setUser(userData);
+            lastValidationTimeRef.current = Date.now(); // Reset validation cache on successful login
         } catch (error) {
-            console.error("Failed to fetch user data after login:", error);
+            logError("AuthContext", "Failed to fetch user data after login", error);
         }
     };
 
@@ -58,8 +80,7 @@ export function AuthProvider({ children }) {
         } catch {
             // proceed with local logout even if the API call fails
         }
-        setToken(null);
-        setUser(null);
+        clearTokens();
     };
 
     if (isValidating) {
@@ -78,7 +99,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ token, user, login, logout }}>
+        <AuthContext.Provider value={{ token: accessToken, user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

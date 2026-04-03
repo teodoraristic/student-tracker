@@ -7,6 +7,7 @@ import { ChevronDown, ChevronRight, Calendar, Award, CheckCircle2, Circle, Plus,
 import { updateTask, updateTaskStatus, deleteTask } from "../../services/taskService";
 import { getSubtasksByTaskId, createSubtask, toggleSubtaskDone, deleteSubtask, updateSubtaskPlan } from "../../services/subtaskService";
 import useIsMobile from "../../hooks/useIsMobile";
+import { logError } from "../../utils/logger";
 
 export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
   const isMobile = useIsMobile();
@@ -26,7 +27,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
           const data = await getSubtasksByTaskId(task.id);
           setSubtasks(data);
         } catch (err) {
-          console.error("Failed to fetch subtasks:", err);
+          logError("TaskRow", "Failed to fetch subtasks", err);
         } finally {
           setSubtasksLoaded(true);
         }
@@ -44,7 +45,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
       const updated = await toggleSubtaskDone(subtaskId, !subtask.done);
       setSubtasks(prev => prev.map(s => s.id === subtaskId ? updated : s));
     } catch (err) {
-      console.error("Failed to toggle subtask:", err);
+      logError("TaskRow", "Failed to toggle subtask", err);
     }
   };
 
@@ -55,7 +56,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
       await deleteSubtask(subtaskId);
       setSubtasks(prev => prev.filter(s => s.id !== subtaskId));
     } catch (err) {
-      console.error("Failed to delete subtask:", err);
+      logError("TaskRow", "Failed to delete subtask", err);
     }
   };
 
@@ -64,7 +65,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
       const updated = await updateSubtaskPlan(subtaskId, dateStr || null);
       setSubtasks(prev => prev.map(s => s.id === subtaskId ? { ...s, plannedForDate: updated.plannedForDate } : s));
     } catch (err) {
-      console.error("Failed to update plan:", err);
+      logError("TaskRow", "Failed to update plan", err);
     }
     setPlanningSubtaskId(null);
   };
@@ -75,7 +76,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
       setSubtasks([...subtasks, newSubtask]);
       setIsAddSubtaskModalOpen(false);
     } catch (err) {
-      console.error("Failed to create subtask:", err);
+      logError("TaskRow", "Failed to create subtask", err);
       alert("Failed to create subtask. Please try again.");
     }
   };
@@ -86,7 +87,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
       if (onTaskUpdate) onTaskUpdate(updatedTask);
       setIsEditTaskModalOpen(false);
     } catch (err) {
-      console.error("Failed to update task:", err);
+      logError("TaskRow", "Failed to update task", err);
       alert("Failed to update assignment. Please try again.");
     }
   };
@@ -98,7 +99,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
       await deleteTask(task.id);
       if (onTaskDelete) onTaskDelete(task.id);
     } catch (err) {
-      console.error("Failed to delete task:", err);
+      logError("TaskRow", "Failed to delete task", err);
       alert("Failed to delete assignment. Please try again.");
     }
   };
@@ -110,7 +111,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
         const updatedTask = await updateTaskStatus(task.id, "TODO");
         if (onTaskUpdate) onTaskUpdate(updatedTask);
       } catch (err) {
-        console.error("Failed to update task status:", err);
+        logError("TaskRow", "Failed to update task status", err);
       }
     } else {
       if (task.points) {
@@ -121,7 +122,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
           const updatedTask = await updateTaskStatus(task.id, "DONE");
           if (onTaskUpdate) onTaskUpdate(updatedTask);
         } catch (err) {
-          console.error("Failed to update task status:", err);
+          logError("TaskRow", "Failed to update task status", err);
         }
       }
     }
@@ -133,7 +134,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
       const updatedTask = await updateTaskStatus(task.id, "DONE", earned);
       if (onTaskUpdate) onTaskUpdate(updatedTask);
     } catch (err) {
-      console.error("Failed to update task status:", err);
+      logError("TaskRow", "Failed to update task status", err);
     }
     setIsPointsModalOpen(false);
   };
@@ -164,20 +165,20 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
 
   return (
     <div style={{
-      ...styles.row,
-      ...(isDone ? styles.rowDone : isOverdue ? styles.rowOverdue : {}),
+      ...s.row,
+      ...(isDone ? s.rowDone : isOverdue ? s.rowOverdue : {}),
     }}>
       {/* Main Row */}
-      <div style={styles.mainRow} onClick={() => setOpen(!open)}>
+      <div style={s.mainRow} onClick={() => setOpen(!open)}>
 
         {/* Left */}
-        <div style={styles.leftSection}>
-          <span style={styles.chevron}>
+        <div style={s.leftSection}>
+          <span style={s.chevron}>
             {open ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
           </span>
 
           <span
-            style={styles.statusIcon}
+            style={s.statusIcon}
             onClick={handleToggleStatus}
             title={isDone ? "Mark as to do" : "Mark as done"}
           >
@@ -187,24 +188,24 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
             }
           </span>
 
-          <div style={styles.taskInfo}>
-            <div style={styles.titleRow}>
+          <div style={s.taskInfo}>
+            <div style={s.titleRow}>
               {isExam && <GraduationCap size={14} color="var(--rose-500)" style={{ flexShrink: 0 }} />}
-              <span style={{ ...styles.taskTitle, ...(isDone ? styles.taskTitleDone : {}) }}>
+              <span style={{ ...s.taskTitle, ...(isDone ? s.taskTitleDone : {}) }}>
                 {task.title}
               </span>
             </div>
             {task.description && (
-              <span style={styles.taskDesc}>{task.description}</span>
+              <span style={s.taskDesc}>{task.description}</span>
             )}
           </div>
         </div>
 
         {/* Right */}
-        <div style={styles.rightSection}>
+        <div style={s.rightSection}>
           {/* Due date — hidden on mobile */}
           {dueDate && !isDone && !isMobile && (
-            <span style={{ ...styles.metaChip, color: dueDate.color }}>
+            <span style={{ ...s.metaChip, color: dueDate.color }}>
               <Calendar size={12} />
               {dueDate.text}
             </span>
@@ -212,7 +213,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
 
           {/* Points — hidden on mobile */}
           {task.points > 0 && !isMobile && (
-            <span style={{ ...styles.metaChip, color: "var(--rose-400)" }}>
+            <span style={{ ...s.metaChip, color: "var(--rose-400)" }}>
               <Award size={12} />
               {isDone && task.earnedPoints != null
                 ? `${task.earnedPoints}/${task.points}pts`
@@ -223,14 +224,14 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
           {/* Actions */}
           <button
             onClick={(e) => { e.stopPropagation(); setIsEditTaskModalOpen(true); }}
-            style={styles.iconBtn}
+            style={s.iconBtn}
             title="Edit assignment"
           >
             <Edit2 size={14} />
           </button>
           <button
             onClick={handleDeleteTask}
-            style={{ ...styles.iconBtn, ...styles.iconBtnDanger }}
+            style={{ ...s.iconBtn, ...s.iconBtnDanger }}
             title="Delete assignment"
           >
             <Trash2 size={14} />
@@ -240,18 +241,18 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
 
       {/* Subtasks panel */}
       {open && (
-        <div style={{ ...styles.subtasksPanel, paddingLeft: isMobile ? "16px" : "52px" }}>
+        <div style={{ ...s.subtasksPanel, paddingLeft: isMobile ? "16px" : "52px" }}>
           {/* Mobile: show chips here since they're hidden in the row */}
           {isMobile && (dueDate || task.points > 0) && (
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "10px" }}>
               {dueDate && !isDone && (
-                <span style={{ ...styles.metaChip, color: dueDate.color }}>
+                <span style={{ ...s.metaChip, color: dueDate.color }}>
                   <Calendar size={12} />
                   {dueDate.text}
                 </span>
               )}
               {task.points > 0 && (
-                <span style={{ ...styles.metaChip, color: "var(--rose-400)" }}>
+                <span style={{ ...s.metaChip, color: "var(--rose-400)" }}>
                   <Award size={12} />
                   {isDone && task.earnedPoints != null
                     ? `${task.earnedPoints}/${task.points}pts`
@@ -262,20 +263,20 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
           )}
           {subtasksLoaded && subtasks.length > 0 && (
             <>
-              <div style={styles.subtasksHeader}>
-                <span style={styles.subtasksLabel}>Subtasks</span>
-                <span style={styles.subtasksCount}>{completedSubtasks}/{subtasks.length} done</span>
+              <div style={s.subtasksHeader}>
+                <span style={s.subtasksLabel}>Subtasks</span>
+                <span style={s.subtasksCount}>{completedSubtasks}/{subtasks.length} done</span>
               </div>
-              <div style={styles.subtasksList}>
+              <div style={s.subtasksList}>
                 {subtasks.map(s => (
-                  <div key={s.id} style={styles.subtaskItem}>
+                  <div key={s.id} style={s.subtaskItem}>
                     <input
                       type="checkbox"
                       checked={s.done}
                       onChange={() => handleToggleSubtask(s.id)}
-                      style={styles.checkbox}
+                      style={s.checkbox}
                     />
-                    <span style={{ ...styles.subtaskText, ...(s.done ? styles.subtaskDone : {}) }}>
+                    <span style={{ ...s.subtaskText, ...(s.done ? s.subtaskDone : {}) }}>
                       {s.title}
                     </span>
 
@@ -284,13 +285,13 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
                       <input
                         type="date"
                         autoFocus
-                        style={styles.planDateInput}
+                        style={s.planDateInput}
                         onChange={(e) => { if (e.target.value) handlePlanSubtask(s.id, e.target.value); }}
                         onBlur={() => setPlanningSubtaskId(null)}
                       />
                     ) : s.plannedForDate ? (
                       <span
-                        style={styles.plannedBadge}
+                        style={s.plannedBadge}
                         onClick={(e) => { e.stopPropagation(); setPlanningSubtaskId(s.id); }}
                         title="Change plan date"
                       >
@@ -300,14 +301,14 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
                           : new Date(s.plannedForDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         <button
                           onClick={(e) => { e.stopPropagation(); handlePlanSubtask(s.id, null); }}
-                          style={styles.unplanBtn}
+                          style={s.unplanBtn}
                           title="Remove from plan"
                         >×</button>
                       </span>
                     ) : (
                       <button
                         onClick={(e) => { e.stopPropagation(); setPlanningSubtaskId(s.id); }}
-                        style={styles.planBtn}
+                        style={s.planBtn}
                         title="Add to daily plan"
                       >
                         <Calendar size={12} />
@@ -316,7 +317,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
 
                     <button
                       onClick={(e) => handleDeleteSubtask(e, s.id)}
-                      style={styles.subtaskDeleteBtn}
+                      style={s.subtaskDeleteBtn}
                       title="Delete subtask"
                     >
                       <X size={13} />
@@ -328,16 +329,16 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
           )}
 
           {subtasksLoaded && subtasks.length === 0 && (
-            <p style={styles.noSubtasks}>No subtasks yet</p>
+            <p style={s.noSubtasks}>No subtasks yet</p>
           )}
 
           {!subtasksLoaded && (
-            <p style={styles.noSubtasks}>Loading...</p>
+            <p style={s.noSubtasks}>Loading...</p>
           )}
 
           <button
             onClick={(e) => { e.stopPropagation(); setIsAddSubtaskModalOpen(true); }}
-            style={styles.addSubtaskBtn}
+            style={s.addSubtaskBtn}
           >
             <Plus size={14} />
             Add subtask
@@ -383,7 +384,7 @@ export default function TaskRow({ task, onTaskUpdate, onTaskDelete }) {
   );
 }
 
-const styles = {
+const s = {
   row: {
     borderBottom: "1px solid var(--border)",
     overflow: "hidden",

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import TaskRow from "../tasks/TaskRow";
 import { ListTodo, ChevronDown, Plus } from "lucide-react";
+import { parseDateLocal } from "../../utils/dateUtils";
 
 const FILTERS = [
   { key: "ALL",     label: "All" },
@@ -15,13 +16,6 @@ const SORTS = [
   { key: "status",  label: "Status" },
   { key: "points",  label: "Points" },
 ];
-
-const parseDateLocal = (raw) => {
-  if (!raw) return null;
-  if (Array.isArray(raw)) return new Date(raw[0], raw[1] - 1, raw[2]);
-  const [y, m, d] = String(raw).split("-").map(Number);
-  return new Date(y, m - 1, d);
-};
 
 const STATUS_ORDER = { TODO: 0, DONE: 1 };
 
@@ -58,14 +52,14 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
   const hasAnyTasks = tasks.length > 0;
 
   return (
-    <div style={styles.section}>
-      <div style={styles.sectionHeader}>
-        <span style={styles.sectionTitle}>Assignments</span>
+    <div style={s.section}>
+      <div style={s.sectionHeader}>
+        <span style={s.sectionTitle}>Assignments</span>
       </div>
 
-      <div style={styles.controls}>
+      <div style={s.controls}>
         {/* Segmented filter */}
-        <div style={styles.segmented}>
+        <div style={s.segmented}>
           {FILTERS.map(({ key, label }) => {
             const active = filterStatus === key;
             const isOverdueTab = key === "OVERDUE";
@@ -74,8 +68,8 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
                 key={key}
                 onClick={() => setFilterStatus(key)}
                 style={{
-                  ...styles.tab,
-                  ...(active ? (isOverdueTab ? styles.tabOverdueActive : styles.tabActive) : {}),
+                  ...s.tab,
+                  ...(active ? (isOverdueTab ? s.tabOverdueActive : s.tabActive) : {}),
                 }}
               >
                 {label}
@@ -85,17 +79,17 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
         </div>
 
         {/* Sort dropdown */}
-        <div style={styles.sortWrapper}>
-          <button style={styles.sortBtn} onClick={() => setSortOpen((v) => !v)}>
+        <div style={s.sortWrapper}>
+          <button style={s.sortBtn} onClick={() => setSortOpen((v) => !v)}>
             Sort: {activeSort.label}
             <ChevronDown size={13} />
           </button>
           {sortOpen && (
-            <div style={styles.dropdown}>
+            <div style={s.dropdown}>
               {SORTS.map(({ key, label }) => (
                 <button
                   key={key}
-                  style={{ ...styles.dropdownItem, ...(sortBy === key ? styles.dropdownItemActive : {}) }}
+                  style={{ ...s.dropdownItem, ...(sortBy === key ? s.dropdownItemActive : {}) }}
                   onClick={() => { setSortBy(key); setSortOpen(false); }}
                 >
                   {label}
@@ -108,18 +102,18 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
 
       {sorted.length === 0 ? (
         hasAnyTasks ? (
-          <div style={styles.inlineEmpty}>
+          <div style={s.inlineEmpty}>
             No {filterStatus.toLowerCase()} assignments.
           </div>
         ) : (
-          <div style={styles.fullEmpty}>
+          <div style={s.fullEmpty}>
             <ListTodo size={40} color="var(--ink-4)" />
-            <p style={styles.emptyTitle}>No assignments yet</p>
-            <p style={styles.emptySub}>Add your first assignment to start tracking progress</p>
+            <p style={s.emptyTitle}>No assignments yet</p>
+            <p style={s.emptySub}>Add your first assignment to start tracking progress</p>
           </div>
         )
       ) : (
-        <div style={styles.list}>
+        <div style={s.list}>
           {sorted.map((t) => (
             <TaskRow key={t.id} task={t} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} />
           ))}
@@ -128,17 +122,17 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
 
       {/* Add row */}
       {(onAddTask || onAddExam) && (
-        <div style={styles.addRow}>
+        <div style={s.addRow}>
           {onAddTask && (
-            <button style={styles.inlineAddBtn} onClick={onAddTask}>
+            <button style={s.inlineAddBtn} onClick={onAddTask}>
               <Plus size={14} color="var(--rose-400)" />
-              <span style={styles.inlineAddText}>Add task</span>
+              <span style={s.inlineAddText}>Add task</span>
             </button>
           )}
           {onAddExam && (
-            <button style={{ ...styles.inlineAddBtn, borderRight: "none" }} onClick={onAddExam}>
+            <button style={{ ...s.inlineAddBtn, borderRight: "none" }} onClick={onAddExam}>
               <Plus size={14} color="var(--rose-400)" />
-              <span style={styles.inlineAddText}>Add exam</span>
+              <span style={s.inlineAddText}>Add exam</span>
             </button>
           )}
         </div>
@@ -147,7 +141,7 @@ export default function SubjectTasksSection({ tasks, filterStatus, setFilterStat
   );
 }
 
-const styles = {
+const s = {
   section: {
     display: "flex",
     flexDirection: "column",

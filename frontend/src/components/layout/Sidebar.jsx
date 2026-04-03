@@ -1,38 +1,22 @@
-import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Calendar, LayoutGrid, LogOut, User, FlameKindling, Moon, Sun } from "lucide-react";
+import { Home, BookOpen, Calendar, LayoutGrid, LogOut, FlameKindling } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
+import { SALMON, WHITE } from "../../utils/colors";
+
+const navItems = [
+  { path: "/home",     label: "Home",       icon: Home },
+  { path: "/subjects", label: "Subjects",   icon: BookOpen },
+  { path: "/calendar", label: "Calendar",   icon: Calendar },
+  { path: "/planner",  label: "Planner",    icon: LayoutGrid },
+  { path: "/study",    label: "Study Room", icon: FlameKindling },
+];
 
 export default function Sidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { logout, user } = useAuth();
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem("theme") || "light";
-    document.documentElement.setAttribute("data-theme", saved);
-    return saved === "dark";
-  });
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    const theme = next ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  };
-
-  const navItems = [
-    { path: "/home", label: "Home", icon: Home },
-    { path: "/subjects", label: "Subjects", icon: BookOpen },
-    { path: "/calendar", label: "Calendar", icon: Calendar },
-    { path: "/planner", label: "Planner", icon: LayoutGrid },
-    { path: "/study", label: "Study Room", icon: FlameKindling },
-  ];
+  const handleLogout = () => { logout(); navigate("/login"); };
 
   const initials = user?.firstName && user?.lastName
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
@@ -44,62 +28,43 @@ export default function Sidebar() {
 
   return (
     <div style={styles.sidebar}>
-      {/* Logo/Brand */}
+      {/* Brand */}
       <div style={styles.brand}>
         <img src="/logo.png" alt="SemesterOS" style={styles.logoImg} />
       </div>
 
-      {/* Navigation */}
+      {/* Nav */}
       <nav style={styles.nav}>
-        {navItems.map(item => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-
+        {navItems.map(({ path, label, icon: Icon }) => {
+          const active = location.pathname === path;
           return (
-            <Link
-              key={item.path}
-              to={item.path}
-              style={{
-                ...styles.navItem,
-                ...(isActive ? styles.navItemActive : {}),
-              }}
-            >
-              <Icon size={16} />
-              <span>{item.label}</span>
+            <Link key={path} to={path} style={{ ...styles.navActive : {}) }}>
+              <Icon size={16} color={active ? SALMON : "rgba(255,255,255,0.38)"} strokeWidth={active ? 2.2 : 1.8} />
+              <span style={{ color: active ? WHITE : "rgba(255,255,255,0.45)" }}>{label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom Section */}
-      <div style={styles.bottomSection}>
+      {/* Bottom */}
+      <div style={styles.bottom}>
         <Link
           to="/profile"
-          style={{
-            ...styles.userSection,
-            textDecoration: "none",
-            cursor: "pointer",
-            ...(location.pathname === "/profile" ? styles.userSectionActive : {}),
-          }}
+          style={{ ...styles.userRowActive : {}) }}
         >
-          <div style={styles.userAvatar}>
-            <span style={styles.userInitials}>{initials}</span>
+          <div style={styles.avatar}>
+            <span style={styles.initials}>{initials}</span>
           </div>
           <div style={styles.userInfo}>
-            <div style={styles.userName}>{displayName}</div>
-            <div style={styles.userEmail}>{user?.email || ""}</div>
+            <span style={styles.userName}>{displayName}</span>
+            <span style={styles.userEmail}>{user?.email || ""}</span>
           </div>
         </Link>
 
-        <div style={styles.bottomActions}>
-          <button onClick={toggleDark} style={styles.darkModeBtn} title="Toggle dark mode">
-            {isDark ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-          <button onClick={handleLogout} style={styles.logoutBtn}>
-            <LogOut size={15} />
-            <span>Logout</span>
-          </button>
-        </div>
+        <button onClick={handleLogout} style={styles.logoutBtn}>
+          <LogOut size={14} color="rgba(255,255,255,0.35)" />
+          <span>Logout</span>
+        </button>
       </div>
     </div>
   );
@@ -107,143 +72,115 @@ export default function Sidebar() {
 
 const styles = {
   sidebar: {
-    width: "240px",
-    background: "var(--surface-2)",
-    borderRight: "1px solid var(--border)",
+    width: "220px",
+    background: "#151515",
+    borderRight: "1px solid rgba(255,255,255,0.06)",
     display: "flex",
     flexDirection: "column",
     height: "100vh",
-    padding: "20px 12px",
+    padding: "20px 10px",
     flexShrink: 0,
   },
   brand: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0",
-    marginBottom: "28px",
-    paddingLeft: "10px",
-    paddingBottom: "20px",
-    borderBottom: "1px solid var(--border)",
+    paddingLeft: 8,
+    paddingBottom: 20,
+    marginBottom: 16,
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
   },
   logoImg: {
-    height: "40px",
+    height: 36,
     width: "auto",
     objectFit: "contain",
   },
   nav: {
     display: "flex",
     flexDirection: "column",
-    gap: "2px",
+    gap: 2,
     flex: 1,
   },
   navItem: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
-    padding: "11px 14px",
-    borderRadius: "var(--r-md)",
-    color: "var(--ink-3)",
+    gap: 10,
+    padding: "10px 12px",
+    borderRadius: 10,
     textDecoration: "none",
-    fontSize: "15px",
+    fontSize: 14,
     fontFamily: "'DM Sans', system-ui, sans-serif",
-    fontWeight: "400",
-    transition: "all 0.15s ease",
-    cursor: "pointer",
+    fontWeight: 400,
+    transition: "background 0.15s",
   },
-  navItemActive: {
-    background: "var(--rose-50)",
-    color: "var(--rose-500)",
-    fontWeight: "500",
+  navActive: {
+    background: "rgba(244,149,133,0.1)",
+    fontWeight: 500,
   },
-  bottomSection: {
-    marginTop: "auto",
-    paddingTop: "16px",
-    borderTop: "1px solid var(--border)",
+  bottom: {
+    borderTop: "1px solid rgba(255,255,255,0.06)",
+    paddingTop: 14,
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
+    gap: 6,
   },
-  userSection: {
+  userRow: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: 10,
     padding: "8px 10px",
-    borderRadius: "var(--r-md)",
-    cursor: "pointer",
-    transition: "background 0.15s ease",
+    borderRadius: 10,
+    transition: "background 0.15s",
   },
-  userSectionActive: {
-    background: "var(--rose-50)",
+  userRowActive: {
+    background: "rgba(244,149,133,0.08)",
   },
-  userAvatar: {
-    width: "28px",
-    height: "28px",
+  avatar: {
+    width: 30,
+    height: 30,
     borderRadius: "50%",
-    background: "var(--rose-50)",
+    background: "rgba(244,149,133,0.15)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
-  userInitials: {
-    fontSize: "11px",
-    fontWeight: "700",
-    color: "var(--rose-500)",
+  initials: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: SALMON,
     fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   userInfo: {
     display: "flex",
     flexDirection: "column",
-    gap: "1px",
+    gap: 1,
     minWidth: 0,
   },
   userName: {
-    fontSize: "13px",
-    fontWeight: "500",
-    color: "var(--ink)",
+    fontSize: 13,
+    fontWeight: 500,
+    color: "rgba(255,255,255,0.85)",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
   userEmail: {
-    fontSize: "11px",
-    color: "var(--ink-3)",
+    fontSize: 11,
+    color: "rgba(255,255,255,0.35)",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
-  bottomActions: {
-    display: "flex",
-    gap: "8px",
-    alignItems: "center",
-  },
-  darkModeBtn: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "32px",
-    height: "32px",
-    background: "transparent",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--r-sm)",
-    color: "var(--ink-3)",
-    cursor: "pointer",
-    flexShrink: 0,
-  },
   logoutBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: 8,
     padding: "8px 12px",
-    flex: 1,
-    borderRadius: "var(--r-sm)",
+    borderRadius: 10,
     background: "transparent",
-    border: "1px solid var(--border)",
-    color: "var(--ink-3)",
-    fontSize: "13px",
+    border: "1px solid rgba(255,255,255,0.07)",
+    color: "rgba(255,255,255,0.35)",
+    fontSize: 13,
     fontFamily: "'DM Sans', system-ui, sans-serif",
-    fontWeight: "500",
     cursor: "pointer",
-    transition: "all 0.15s ease",
+    transition: "all 0.15s",
   },
 };

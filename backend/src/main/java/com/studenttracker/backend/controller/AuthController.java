@@ -8,20 +8,27 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 import com.studenttracker.backend.dto.UserDTO;
+import com.studenttracker.backend.dto.request.ChangePasswordRequest;
 import com.studenttracker.backend.dto.request.LoginRequest;
+import com.studenttracker.backend.dto.request.RefreshTokenRequest;
 import com.studenttracker.backend.dto.request.RegisterRequest;
 import com.studenttracker.backend.dto.response.AuthResponse;
+import com.studenttracker.backend.dto.response.TokenRefreshResponse;
+import com.studenttracker.backend.model.RefreshToken;
 import com.studenttracker.backend.model.User;
 import com.studenttracker.backend.service.AuthService;
+import com.studenttracker.backend.service.RefreshTokenService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
- 
-    private final AuthService authService;
 
-    public AuthController(AuthService authService) {
+    private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
+
+    public AuthController(AuthService authService, RefreshTokenService refreshTokenService) {
         this.authService = authService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/register")
@@ -44,5 +51,23 @@ public class AuthController {
     public UserDTO getCurrentUser() {
         User user = authService.getCurrentUser();
         return new UserDTO(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName());
+    }
+
+    @PostMapping("/change-password")
+    public void changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(request);
+    }
+
+    @PostMapping("/refresh")
+    public TokenRefreshResponse refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        User user = refreshTokenService.validateToken(request.refreshToken);
+
+        // Issue new access token
+        String newAccessToken = authService.generateAccessToken(user);
+
+        // Rotate refresh token (old is revoked, new is issued)
+        RefreshToken newRefreshToken = refreshTokenService.rotateToken(request.refreshToken);
+
+        return new TokenRefreshResponse(newAccessToken, newRefreshToken.getToken());
     }
 }

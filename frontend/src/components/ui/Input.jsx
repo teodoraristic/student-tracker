@@ -1,17 +1,13 @@
-export default function Input({
-  label,
-  error,
-  style = {},
-  ...props
-}) {
+export default function Input({ label, error, style = {}, ...props }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '100%' }}>
       {label && (
         <label style={{
-          fontSize: '13px',
+          fontSize: '12px',
           fontWeight: '600',
-          color: 'var(--ink)',
+          color: 'rgba(255,255,255,0.5)',
           fontFamily: "'DM Sans', system-ui, sans-serif",
+          letterSpacing: '0.02em',
         }}>
           {label}
         </label>
@@ -20,22 +16,22 @@ export default function Input({
         style={{
           width: '100%',
           padding: '10px 12px',
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--r-md)',
-          color: 'var(--ink)',
+          background: 'rgba(255,255,255,0.05)',
+          border: `1px solid ${error ? '#f87171' : 'rgba(255,255,255,0.09)'}`,
+          borderRadius: '10px',
+          color: 'rgba(255,255,255,0.9)',
           fontSize: '13px',
           fontFamily: "'DM Sans', system-ui, sans-serif",
           outline: 'none',
-          transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
+          transition: 'border-color 0.15s',
           ...style,
         }}
         {...props}
       />
       {error && (
         <span style={{
-          fontSize: '12px',
-          color: 'var(--color-overdue)',
+          fontSize: '11px',
+          color: '#f87171',
           fontFamily: "'DM Sans', system-ui, sans-serif",
         }}>
           {error}

@@ -18,6 +18,7 @@ import com.studenttracker.backend.dto.request.RegisterRequest;
 import com.studenttracker.backend.dto.response.AuthResponse;
 import com.studenttracker.backend.exception.ConflictException;
 import com.studenttracker.backend.exception.UnauthorizedException;
+import com.studenttracker.backend.model.RefreshToken;
 import com.studenttracker.backend.model.User;
 import com.studenttracker.backend.repository.UserRepository;
 
@@ -33,6 +34,9 @@ class AuthServiceTest {
     @Mock
     private JwtService jwtService;
 
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
     @InjectMocks
     private AuthService authService;
 
@@ -46,14 +50,23 @@ class AuthServiceTest {
         request.firstName = "John";
         request.lastName = "Doe";
 
+        User savedUser = new User();
+        savedUser.setId(1L);
+        savedUser.setEmail("john@example.com");
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken("refresh-token");
+
         when(userRepository.existsByEmail("john@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hashed");
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
         when(jwtService.generateToken(any(User.class))).thenReturn("jwt-token");
+        when(refreshTokenService.createToken(any(User.class))).thenReturn(refreshToken);
 
         AuthResponse response = authService.register(request);
 
-        assertThat(response.token).isEqualTo("jwt-token");
+        assertThat(response.accessToken).isEqualTo("jwt-token");
+        assertThat(response.refreshToken).isEqualTo("refresh-token");
         verify(userRepository).save(any(User.class));
     }
 
@@ -83,16 +96,22 @@ class AuthServiceTest {
         request.password = "password123";
 
         User user = new User();
+        user.setId(1L);
         user.setEmail("john@example.com");
         user.setPassword("hashed");
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken("refresh-token");
 
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
+        when(refreshTokenService.createToken(user)).thenReturn(refreshToken);
 
         AuthResponse response = authService.login(request);
 
-        assertThat(response.token).isEqualTo("jwt-token");
+        assertThat(response.accessToken).isEqualTo("jwt-token");
+        assertThat(response.refreshToken).isEqualTo("refresh-token");
     }
 
     @Test

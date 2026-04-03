@@ -1,14 +1,6 @@
 import { useState } from "react";
 import useIsMobile from "../../hooks/useIsMobile";
-
-const toDateInputStr = (date) => {
-    if (!date) return "";
-    if (Array.isArray(date)) {
-        const [y, m, d] = date;
-        return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    }
-    return date;
-};
+import { toDateInputStr } from "../../utils/dateUtils";
 
 export default function TaskForm({ onSubmit, onCancel, initialData = null, defaultDate = "" }) {
     const isMobile = useIsMobile();
@@ -36,63 +28,63 @@ export default function TaskForm({ onSubmit, onCancel, initialData = null, defau
     };
 
     return (
-        <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.field}>
-                <label style={styles.label}>Assignment Title *</label>
+        <form onSubmit={handleSubmit} style={s.form}>
+            <div style={s.field}>
+                <label style={s.label}>Assignment Title *</label>
                 <input
                     type="text"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    style={styles.input}
+                    style={s.input}
                     placeholder="e.g. Midterm Exam 1"
                     required
                 />
             </div>
 
-            <div style={styles.field}>
-                <label style={styles.label}>Description (optional)</label>
+            <div style={s.field}>
+                <label style={s.label}>Description (optional)</label>
                 <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    style={styles.textarea}
+                    style={s.textarea}
                     placeholder="Assignment details..."
                     rows="3"
                 />
             </div>
 
-            <div style={isMobile ? styles.rowMobile : styles.row}>
-                <div style={styles.field}>
-                    <label style={styles.label}>Due Date (optional)</label>
+            <div style={isMobile ? s.rowMobile : s.row}>
+                <div style={s.field}>
+                    <label style={s.label}>Due Date (optional)</label>
                     <input
                         type="date"
                         name="dueDate"
                         value={formData.dueDate}
                         onChange={handleChange}
-                        style={styles.input}
+                        style={s.input}
                     />
                 </div>
 
-                <div style={styles.field}>
-                    <label style={styles.label}>Points (optional)</label>
+                <div style={s.field}>
+                    <label style={s.label}>Points (optional)</label>
                     <input
                         type="number"
                         name="points"
                         value={formData.points}
                         onChange={handleChange}
-                        style={styles.input}
+                        style={s.input}
                         placeholder="e.g. 30"
                         min="0"
                     />
                 </div>
             </div>
 
-            <div style={styles.buttons}>
-                <button type="button" onClick={onCancel} style={styles.cancelBtn}>
+            <div style={s.buttons}>
+                <button type="button" onClick={onCancel} style={s.cancelBtn}>
                     Cancel
                 </button>
-                <button type="submit" style={styles.submitBtn}>
+                <button type="submit" style={s.submitBtn}>
                     {initialData ? "Update" : "Add"}
                 </button>
             </div>
@@ -100,7 +92,7 @@ export default function TaskForm({ onSubmit, onCancel, initialData = null, defau
     );
 }
 
-const styles = {
+const s = {
     form: {
         display: "flex",
         flexDirection: "column",
@@ -150,31 +142,6 @@ const styles = {
         outline: "none",
         color: "var(--ink)",
         background: "var(--surface)",
-    },
-    select: {
-        padding: "10px 12px",
-        fontSize: "13px",
-        border: "1px solid var(--border)",
-        borderRadius: "var(--r-md)",
-        fontFamily: "'DM Sans', system-ui, sans-serif",
-        transition: "all 0.15s ease",
-        outline: "none",
-        background: "var(--surface)",
-        cursor: "pointer",
-        color: "var(--ink)",
-    },
-    examToggleRow: {
-        display: "flex",
-        alignItems: "center",
-    },
-    examToggleLabel: {
-        display: "flex",
-        alignItems: "center",
-        fontSize: "13px",
-        fontWeight: "500",
-        color: "var(--ink-2)",
-        cursor: "pointer",
-        fontFamily: "'DM Sans', system-ui, sans-serif",
     },
     buttons: {
         display: "flex",

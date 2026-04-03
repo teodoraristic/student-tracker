@@ -8,6 +8,7 @@ import { SUBJECT_COLORS } from "../utils/subjectColors";
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronRight as ChevronRightIcon, Plus, Clock, GraduationCap } from "lucide-react";
 import { getSubtasksByTaskId } from "../services/subtaskService";
 import useIsMobile from "../hooks/useIsMobile";
+import { logError } from "../utils/logger";
 // ── Constants ──────────────────────────────────────────────────────────────────
 const EXAM_PERIOD_COLORS = ["#f59e0b", "#3b82f6", "#8b5cf6", "#10b981", "#ec4899", "#14b8a6", "#f97316", "#6366f1"];
 
@@ -110,7 +111,7 @@ export default function CalendarPage() {
         setSubjects(subjectsData);
         setExamPeriods(epData);
       } catch (err) {
-        console.error("Failed to fetch calendar data:", err);
+        logError("CalendarPage", "Failed to fetch calendar data", err);
         setError("Failed to load calendar data");
       } finally {
         setLoading(false);
@@ -232,7 +233,7 @@ export default function CalendarPage() {
       setIsModalOpen(false);
       setSelectedSubjectId("");
     } catch (err) {
-      console.error("Failed to create task:", err);
+      logError("CalendarPage", "Failed to create task", err);
       alert("Failed to create assignment. Please try again.");
     }
   }, [selectedSubjectId]);
@@ -676,7 +677,7 @@ function TaskOverviewCard({ task, subjects }) {
         setSubtasks(data);
         setSubtasksLoaded(true);
       } catch (err) {
-        console.error("Failed to fetch subtasks:", err);
+        logError("TaskOverviewCard", "Failed to fetch subtasks", err);
       }
     }
     setShowSubtasks(prev => !prev);

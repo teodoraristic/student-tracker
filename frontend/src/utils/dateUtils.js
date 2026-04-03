@@ -18,3 +18,16 @@ export const parseDateLocal = (raw) => {
   const [y, m, d] = String(raw).split("-").map(Number);
   return new Date(y, m - 1, d);
 };
+
+/**
+ * Converts a date value to a YYYY-MM-DD string for use with HTML5 <input type="date">.
+ * Handles both array format [y, m, d] and string "YYYY-MM-DD".
+ */
+export const toDateInputStr = (date) => {
+  if (!date) return "";
+  if (Array.isArray(date)) {
+    const [y, m, d] = date;
+    return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  }
+  return String(date);
+};

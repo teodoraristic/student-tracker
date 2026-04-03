@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
 
 @Entity
 @Table(name = "users")
@@ -31,6 +32,12 @@ public class User {
 
     @Column(nullable = false, columnDefinition = "integer default 0")
     private int tokenVersion = 0;
+
+    @Column
+    private Instant lastPasswordResetTime;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int passwordResetCount = 0;
 
     public User() {
     }
@@ -93,5 +100,31 @@ public class User {
 
     public void incrementTokenVersion() {
         this.tokenVersion++;
+    }
+
+    public Instant getLastPasswordResetTime() {
+        return lastPasswordResetTime;
+    }
+
+    public void setLastPasswordResetTime(Instant lastPasswordResetTime) {
+        this.lastPasswordResetTime = lastPasswordResetTime;
+    }
+
+    public int getPasswordResetCount() {
+        return passwordResetCount;
+    }
+
+    public void setPasswordResetCount(int passwordResetCount) {
+        this.passwordResetCount = passwordResetCount;
+    }
+
+    public void resetPasswordResetAttempts() {
+        this.passwordResetCount = 0;
+        this.lastPasswordResetTime = null;
+    }
+
+    public void incrementPasswordResetAttempts() {
+        this.passwordResetCount++;
+        this.lastPasswordResetTime = Instant.now();
     }
 }

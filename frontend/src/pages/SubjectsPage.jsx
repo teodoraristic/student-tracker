@@ -9,6 +9,7 @@ import Modal from "../components/common/Modal";
 import Button from "../components/ui/Button";
 import { Plus, BookOpen, Award } from "lucide-react";
 import { parseDateLocal } from "../utils/dateUtils";
+import { logError } from "../utils/logger";
 
 export default function SubjectsPage() {
   const [subjects, setSubjects] = useState([]);
@@ -50,7 +51,7 @@ export default function SubjectsPage() {
         setActiveSemesterId(active.id);
       }
     } catch (err) {
-      console.error("Failed to fetch data:", err);
+      logError("SubjectsPage", "Failed to fetch data", err);
       setError("Failed to load subjects");
     } finally {
       setLoading(false);
@@ -63,7 +64,7 @@ export default function SubjectsPage() {
       setSubjects([...subjects, newSubject]);
       setIsModalOpen(false);
     } catch (err) {
-      console.error("Failed to create subject:", err);
+      logError("SubjectsPage", "Failed to create subject", err);
       alert("Failed to create subject. Please try again.");
     }
   };
@@ -174,28 +175,28 @@ export default function SubjectsPage() {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.loadingText}>Loading subjects...</div>
+      <div style={s.loadingContainer}>
+        <div style={s.loadingText}>Loading subjects...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={styles.errorContainer}>
-        <div style={styles.errorText}>{error}</div>
+      <div style={s.errorContainer}>
+        <div style={s.errorText}>{error}</div>
         <Button onClick={fetchData}>Retry</Button>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
+    <div style={s.container}>
       {/* Header */}
-      <div style={styles.header}>
+      <div style={s.header}>
         <div>
-          <h1 style={styles.title}>My Subjects</h1>
-          <p style={styles.subtitle}>Manage your courses and track your academic progress</p>
+          <h1 style={s.title}>My Subjects</h1>
+          <p style={s.subtitle}>Manage your courses and track your academic progress</p>
         </div>
         <Button variant="primary" size="md" onClick={() => setIsModalOpen(true)}>
           <Plus size={20} />
@@ -205,27 +206,27 @@ export default function SubjectsPage() {
 
       {/* Overview stats */}
       {subjects.length > 0 && (
-        <div style={styles.statsRow}>
-          <div style={styles.statItem}>
-            <span style={styles.statNum}>{subjects.length}</span>
-            <span style={styles.statLabel}>Subjects</span>
+        <div style={s.statsRow}>
+          <div style={s.statItem}>
+            <span style={s.statNum}>{subjects.length}</span>
+            <span style={s.statLabel}>Subjects</span>
           </div>
           {passedCount > 0 && (
             <>
-              <span style={styles.statDivider}>|</span>
-              <div style={styles.statItem}>
+              <span style={s.statDivider}>|</span>
+              <div style={s.statItem}>
                 <Award size={16} color="var(--color-done)" />
-                <span style={{ ...styles.statNum, color: "var(--color-done)" }}>{passedCount}</span>
-                <span style={styles.statLabel}>Passed</span>
+                <span style={{ ...s.statNum, color: "var(--color-done)" }}>{passedCount}</span>
+                <span style={s.statLabel}>Passed</span>
               </div>
             </>
           )}
           {avgGrade !== null && (
             <>
-              <span style={styles.statDivider}>|</span>
-              <div style={styles.statItem}>
-                <span style={styles.statNum}>{avgGrade}</span>
-                <span style={styles.statLabel}>Avg grade</span>
+              <span style={s.statDivider}>|</span>
+              <div style={s.statItem}>
+                <span style={s.statNum}>{avgGrade}</span>
+                <span style={s.statLabel}>Avg grade</span>
               </div>
             </>
           )}
@@ -234,9 +235,9 @@ export default function SubjectsPage() {
 
       {/* Semester tabs */}
       {semesters.length > 0 && subjects.length > 0 && (
-        <div style={styles.semesterTabs}>
+        <div style={s.semesterTabs}>
           <button
-            style={{ ...styles.semesterTab, ...(activeSemesterId == null ? styles.semesterTabActive : {}) }}
+            style={{ ...s.semesterTab, ...(activeSemesterId == null ? s.semesterTabActive : {}) }}
             onClick={() => setActiveSemesterId(null)}
           >
             All
@@ -244,7 +245,7 @@ export default function SubjectsPage() {
           {semesters.map((s) => (
             <button
               key={s.id}
-              style={{ ...styles.semesterTab, ...(activeSemesterId === s.id ? styles.semesterTabActive : {}) }}
+              style={{ ...s.semesterTab, ...(activeSemesterId === s.id ? s.semesterTabActive : {}) }}
               onClick={() => setActiveSemesterId(s.id)}
             >
               {s.name}
@@ -255,13 +256,13 @@ export default function SubjectsPage() {
 
       {/* Toolbar */}
       {subjects.length > 0 && (
-        <div style={styles.toolbar}>
-          <div style={styles.toolbarGroup}>
-            <span style={styles.toolbarLabel}>Sort</span>
+        <div style={s.toolbar}>
+          <div style={s.toolbarGroup}>
+            <span style={s.toolbarLabel}>Sort</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              style={styles.toolbarSelect}
+              style={s.toolbarSelect}
             >
               <option value="status">Status</option>
               <option value="passed_first">Passed first</option>
@@ -269,12 +270,12 @@ export default function SubjectsPage() {
               <option value="name">Name</option>
             </select>
           </div>
-          <div style={styles.toolbarGroup}>
-            <span style={styles.toolbarLabel}>Show</span>
+          <div style={s.toolbarGroup}>
+            <span style={s.toolbarLabel}>Show</span>
             <select
               value={filterBy}
               onChange={(e) => setFilterBy(e.target.value)}
-              style={styles.toolbarSelect}
+              style={s.toolbarSelect}
             >
               <option value="all">All</option>
               <option value="in_progress">In Progress</option>
@@ -286,12 +287,12 @@ export default function SubjectsPage() {
 
       {/* Content */}
       {subjects.length === 0 ? (
-        <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>
+        <div style={s.emptyState}>
+          <div style={s.emptyIcon}>
             <BookOpen size={48} color="#d4d4d4" />
           </div>
-          <h3 style={styles.emptyTitle}>No subjects yet</h3>
-          <p style={styles.emptyText}>Get started by adding your first subject to track</p>
+          <h3 style={s.emptyTitle}>No subjects yet</h3>
+          <p style={s.emptyText}>Get started by adding your first subject to track</p>
           <Button
             variant="primary"
             size="lg"
@@ -304,8 +305,8 @@ export default function SubjectsPage() {
         </div>
       ) : showGroups ? (
         <>
-          <div style={styles.sectionLabel}>In Progress</div>
-          <div style={styles.grid}>
+          <div style={s.sectionLabel}>In Progress</div>
+          <div style={s.grid}>
             {inProgressGroup.map((s) => (
               <SubjectCard
                 key={s.id}
@@ -318,8 +319,8 @@ export default function SubjectsPage() {
               />
             ))}
           </div>
-          <div style={styles.sectionLabel}>Passed</div>
-          <div style={styles.grid}>
+          <div style={s.sectionLabel}>Passed</div>
+          <div style={s.grid}>
             {finalizedGroup.map((s) => (
               <SubjectCard
                 key={s.id}
@@ -334,7 +335,7 @@ export default function SubjectsPage() {
           </div>
         </>
       ) : (
-        <div style={styles.grid}>
+        <div style={s.grid}>
           {sortedSubjects.map((s) => (
             <SubjectCard
               key={s.id}
@@ -376,7 +377,7 @@ export default function SubjectsPage() {
   );
 }
 
-const styles = {
+const s = {
   container: { width: "100%", maxWidth: "1400px", margin: "0 auto" },
   loadingContainer: { display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" },
   loadingText: { fontSize: "16px", color: "var(--ink-3)" },

@@ -41,52 +41,52 @@ export default function SubjectHero({
   const statsSection = (
     <>
       {/* Progress stat */}
-      <div style={isMobile ? styles.colStatMobile : styles.colStat}>
-        <span style={styles.colLabel}>Progress</span>
-        <span style={styles.statBig}>{completionPct}%</span>
-        <span style={styles.statSub}>completion</span>
-        <div style={styles.breakdown}>
-          <div style={styles.bItem}>
-            <span style={{ ...styles.bCount, color: todoTasks > 0 ? "var(--ink-2)" : "var(--ink-4)" }}>{todoTasks}</span>
-            <span style={styles.bLabel}>To Do</span>
+      <div style={isMobile ? s.colStatMobile : s.colStat}>
+        <span style={s.colLabel}>Progress</span>
+        <span style={s.statBig}>{completionPct}%</span>
+        <span style={s.statSub}>completion</span>
+        <div style={s.breakdown}>
+          <div style={s.bItem}>
+            <span style={{ ...s.bCount, color: todoTasks > 0 ? "var(--ink-2)" : "var(--ink-4)" }}>{todoTasks}</span>
+            <span style={s.bLabel}>To Do</span>
           </div>
-          <span style={styles.bDot}>·</span>
-          <div style={styles.bItem}>
-            <span style={{ ...styles.bCount, color: overdueTasks > 0 ? "var(--color-overdue)" : "var(--ink-4)" }}>{overdueTasks}</span>
-            <span style={styles.bLabel}>Overdue</span>
+          <span style={s.bDot}>·</span>
+          <div style={s.bItem}>
+            <span style={{ ...s.bCount, color: overdueTasks > 0 ? "var(--color-overdue)" : "var(--ink-4)" }}>{overdueTasks}</span>
+            <span style={s.bLabel}>Overdue</span>
           </div>
-          <span style={styles.bDot}>·</span>
-          <div style={styles.bItem}>
-            <span style={{ ...styles.bCount, color: completedTasks > 0 ? "var(--color-done)" : "var(--ink-4)" }}>{completedTasks}</span>
-            <span style={styles.bLabel}>Done</span>
+          <span style={s.bDot}>·</span>
+          <div style={s.bItem}>
+            <span style={{ ...s.bCount, color: completedTasks > 0 ? "var(--color-done)" : "var(--ink-4)" }}>{completedTasks}</span>
+            <span style={s.bLabel}>Done</span>
           </div>
         </div>
       </div>
 
-      {isMobile ? <div style={styles.dividerV} /> : <div style={styles.divider} />}
+      {isMobile ? <div style={s.dividerV} /> : <div style={s.divider} />}
 
       {/* Points stat */}
-      <div style={isMobile ? styles.colStatMobile : styles.colStat}>
-        <span style={styles.colLabel}>Points</span>
+      <div style={isMobile ? s.colStatMobile : s.colStat}>
+        <span style={s.colLabel}>Points</span>
         {isPassed ? (
           <>
-            <span style={styles.gradePassed}>{subject.finalGrade}</span>
-            <span style={styles.gradeCaption}>Final Grade</span>
-            <div style={styles.pointsSubtle}>{earnedPoints}/{totalPoints} pts</div>
+            <span style={s.gradePassed}>{subject.finalGrade}</span>
+            <span style={s.gradeCaption}>Final Grade</span>
+            <div style={s.pointsSubtle}>{earnedPoints}/{totalPoints} pts</div>
           </>
         ) : (
           <>
             <ProgressRing percentage={pointsPct} size={72} strokeWidth={6} color="var(--rose-400)">
-              <span style={styles.ringNum}>{earnedPoints}</span>
-              <span style={styles.ringLabel}>pts</span>
+              <span style={s.ringNum}>{earnedPoints}</span>
+              <span style={s.ringLabel}>pts</span>
             </ProgressRing>
-            <div style={styles.pointsLine}>
-              <span style={styles.pointsEarned}>{earnedPoints}</span>
-              <span style={styles.pointsSep}>/</span>
-              <span style={styles.pointsTotal}>{totalPoints} pts</span>
+            <div style={s.pointsLine}>
+              <span style={s.pointsEarned}>{earnedPoints}</span>
+              <span style={s.pointsSep}>/</span>
+              <span style={s.pointsTotal}>{totalPoints} pts</span>
             </div>
             {isAllDone && totalPoints > 0 && (
-              <span style={styles.gradeHint}>~{calcGrade(earnedPoints)}</span>
+              <span style={s.gradeHint}>~{calcGrade(earnedPoints)}</span>
             )}
           </>
         )}
@@ -96,49 +96,49 @@ export default function SubjectHero({
 
   if (isMobile) {
     return (
-      <div style={{ ...styles.hero, padding: "16px 16px 16px 20px" }}>
-        <div style={{ ...styles.accentBar, background: accentColor }} />
+      <div style={{ ...s.hero, padding: "16px 16px 16px 20px" }}>
+        <div style={{ ...s.accentBar, background: accentColor }} />
 
         {/* Subject info */}
-        <div style={styles.colInfo}>
-          <div style={styles.badgeRow}>
-            <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+        <div style={s.colInfo}>
+          <div style={s.badgeRow}>
+            <span style={{ ...s.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
               {subject.status === "PASSED" && subject.finalGrade ? `Passed · ${subject.finalGrade}` : sc.label}
             </span>
           </div>
-          <div style={styles.titleRow}>
-            <h1 style={{ ...styles.title, fontSize: "24px" }}>{subject.name}</h1>
+          <div style={s.titleRow}>
+            <h1 style={{ ...s.title, fontSize: "24px" }}>{subject.name}</h1>
             {onEditSubject && (
-              <button onClick={onEditSubject} style={styles.editInlineBtn} title="Edit subject">
+              <button onClick={onEditSubject} style={s.editInlineBtn} title="Edit subject">
                 <Pencil size={14} />
               </button>
             )}
           </div>
           {subject.website && (
-            <a href={subject.website} target="_blank" rel="noopener noreferrer" style={styles.websiteLink}>
+            <a href={subject.website} target="_blank" rel="noopener noreferrer" style={s.websiteLink}>
               <ExternalLink size={12} />
               Course Website
             </a>
           )}
         </div>
 
-        <div style={styles.dividerH} />
+        <div style={s.dividerH} />
 
         {/* Stats row */}
-        <div style={styles.mobileStatsRow}>
+        <div style={s.mobileStatsRow}>
           {statsSection}
         </div>
 
         {/* Actions */}
         {(onFinalize && !isFinalized) || (onReset && isFinalized) ? (
           <>
-            <div style={styles.dividerH} />
+            <div style={s.dividerH} />
             <div style={{ paddingTop: "4px" }}>
               {onFinalize && !isFinalized && (
-                <button onClick={onFinalize} style={styles.finalizeBtn}>Finalize Subject</button>
+                <button onClick={onFinalize} style={s.finalizeBtn}>Finalize Subject</button>
               )}
               {onReset && isFinalized && (
-                <button onClick={onReset} style={styles.resetBtn}>Reset to In Progress</button>
+                <button onClick={onReset} style={s.resetBtn}>Reset to In Progress</button>
               )}
             </div>
           </>
@@ -148,29 +148,29 @@ export default function SubjectHero({
   }
 
   return (
-    <div style={{ ...styles.hero }}>
-      <div style={{ ...styles.accentBar, background: accentColor }} />
-      <div style={styles.columns}>
+    <div style={{ ...s.hero }}>
+      <div style={{ ...s.accentBar, background: accentColor }} />
+      <div style={s.columns}>
 
         {/* Col 1 — Subject info */}
-        <div style={styles.colInfo}>
-          <div style={styles.badgeRow}>
-            <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+        <div style={s.colInfo}>
+          <div style={s.badgeRow}>
+            <span style={{ ...s.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
               {subject.status === "PASSED" && subject.finalGrade
                 ? `Passed · ${subject.finalGrade}`
                 : sc.label}
             </span>
           </div>
-          <div style={styles.titleRow}>
-            <h1 style={styles.title}>{subject.name}</h1>
+          <div style={s.titleRow}>
+            <h1 style={s.title}>{subject.name}</h1>
             {onEditSubject && (
-              <button onClick={onEditSubject} style={styles.editInlineBtn} title="Edit subject">
+              <button onClick={onEditSubject} style={s.editInlineBtn} title="Edit subject">
                 <Pencil size={14} />
               </button>
             )}
           </div>
           {subject.website && (
-            <a href={subject.website} target="_blank" rel="noopener noreferrer" style={styles.websiteLink}>
+            <a href={subject.website} target="_blank" rel="noopener noreferrer" style={s.websiteLink}>
               <ExternalLink size={12} />
               Course Website
             </a>
@@ -178,22 +178,22 @@ export default function SubjectHero({
         </div>
 
         {/* Divider */}
-        <div style={styles.divider} />
+        <div style={s.divider} />
 
         {statsSection}
 
         {/* Divider */}
-        <div style={styles.divider} />
+        <div style={s.divider} />
 
         {/* Col 4 — Actions */}
-        <div style={styles.colActions}>
+        <div style={s.colActions}>
           {onFinalize && !isFinalized && (
-            <button onClick={onFinalize} style={styles.finalizeBtn}>
+            <button onClick={onFinalize} style={s.finalizeBtn}>
               Finalize Subject
             </button>
           )}
           {onReset && isFinalized && (
-            <button onClick={onReset} style={styles.resetBtn}>
+            <button onClick={onReset} style={s.resetBtn}>
               Reset to In Progress
             </button>
           )}
@@ -204,7 +204,7 @@ export default function SubjectHero({
   );
 }
 
-const styles = {
+const s = {
   hero: {
     borderRadius: "var(--r-lg)",
     border: "1px solid var(--border)",

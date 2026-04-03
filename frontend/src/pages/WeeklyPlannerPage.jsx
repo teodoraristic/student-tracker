@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Plus, Check, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Check, X } from "lucide-react";
 import useIsMobile from "../hooks/useIsMobile";
 import {
   getSubtasksByDate,
@@ -11,6 +11,7 @@ import {
 } from "../services/subtaskService";
 import { getAllSubjects } from "../services/subjectService";
 import { getTasksBySubjectId } from "../services/taskService";
+import { logError } from "../utils/logger";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -89,7 +90,7 @@ function useWeeklyPlanner() {
       setSubtasksByDay(map);
       setBacklog(unplanned);
     } catch (e) {
-      console.error("Failed to fetch planner data", e);
+      logError("WeeklyPlannerPage", "Failed to fetch planner data", e);
     } finally {
       setLoading(false);
     }
@@ -440,7 +441,7 @@ export default function WeeklyPlannerPage() {
   const [dragOverTarget, setDragOverTarget] = useState(null); // { type, dateStr } | null
 
   useEffect(() => {
-    getAllSubjects().then(setSubjects).catch(console.error);
+    getAllSubjects().then(setSubjects).catch(err => logError("WeeklyPlannerPage", "Failed to load subjects", err));
   }, []);
 
   const todayWeekStart = getMondayOf(new Date());
@@ -476,7 +477,7 @@ export default function WeeklyPlannerPage() {
         : prev.map(st => st.id === id ? { ...st, done } : st)
       );
     } catch (e) {
-      console.error(e);
+      logError("WeeklyPlannerPage", "Failed to toggle subtask", e);
     }
   }, [setSubtasksByDay, setBacklog]);
 
@@ -492,7 +493,7 @@ export default function WeeklyPlannerPage() {
       });
       setBacklog(prev => prev.filter(st => st.id !== id));
     } catch (e) {
-      console.error(e);
+      logError("WeeklyPlannerPage", "Failed to delete subtask", e);
     }
   }, [setSubtasksByDay, setBacklog]);
 
@@ -511,7 +512,7 @@ export default function WeeklyPlannerPage() {
       });
       if (found) setBacklog(prev => [{ ...found, plannedForDate: null }, ...prev]);
     } catch (e) {
-      console.error(e);
+      logError("WeeklyPlannerPage", "Failed to unplan subtask", e);
     }
   }, [setSubtasksByDay, setBacklog]);
 
@@ -530,7 +531,7 @@ export default function WeeklyPlannerPage() {
         });
       }
     } catch (e) {
-      console.error(e);
+      logError("WeeklyPlannerPage", "Failed to assign subtask", e);
     }
   }, [setBacklog, setSubtasksByDay]);
 
@@ -570,7 +571,7 @@ export default function WeeklyPlannerPage() {
           return next;
         });
       } catch (e) {
-        console.error(e);
+        logError("WeeklyPlannerPage", "Failed to move subtask", e);
       }
     }
   }, [dragInfo, handleUnplan, handleAssign, setSubtasksByDay]);
@@ -586,7 +587,7 @@ export default function WeeklyPlannerPage() {
       await createSubtask(data);
       refetch();
     } catch (e) {
-      console.error(e);
+      logError("WeeklyPlannerPage", "Failed to create subtask", e);
     }
   }, [refetch]);
 
@@ -1055,50 +1056,6 @@ const c = {
     border: "1px solid var(--color-overdue-bg)",
     background: "var(--color-overdue-bg)",
     color: "var(--color-overdue)",
-    cursor: "pointer",
-    padding: 0,
-  },
-  dayPicker: {
-    display: "flex",
-    alignItems: "center",
-    gap: "2px",
-    background: "var(--surface)",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--r-sm)",
-    padding: "3px",
-  },
-  dayPickerBtn: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "3px 5px",
-    borderRadius: "var(--r-sm)",
-    border: "none",
-    background: "transparent",
-    color: "var(--ink-3)",
-    fontSize: "9px",
-    fontWeight: "600",
-    cursor: "pointer",
-    lineHeight: 1,
-    gap: "1px",
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-  },
-  dayPickerNum: {
-    fontSize: "10px",
-    fontWeight: "700",
-    color: "var(--ink)",
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-  },
-  dayPickerCancel: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "18px",
-    height: "18px",
-    borderRadius: "var(--r-sm)",
-    border: "none",
-    background: "transparent",
-    color: "var(--ink-3)",
     cursor: "pointer",
     padding: 0,
   },
