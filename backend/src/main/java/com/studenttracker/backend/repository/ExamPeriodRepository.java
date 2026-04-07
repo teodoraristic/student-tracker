@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ExamPeriodRepository extends JpaRepository<ExamPeriod, Long> {
     List<ExamPeriod> findAllByUser(User user);
+
+    void deleteAllByUser(User user);
 }

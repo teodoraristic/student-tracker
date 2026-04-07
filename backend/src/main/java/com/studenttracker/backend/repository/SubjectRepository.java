@@ -17,4 +17,6 @@ public interface SubjectRepository extends JpaRepository<Subject, Long>{
     boolean existsByNameAndUser(String name, User user);
 
     long countByUser(User user);
+
+    void deleteAllByUser(User user);
 }

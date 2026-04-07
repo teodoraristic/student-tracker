@@ -39,6 +39,18 @@ public class User {
     @Column(nullable = false, columnDefinition = "integer default 0")
     private int passwordResetCount = 0;
 
+    @Column
+    private String passwordResetToken;
+
+    @Column
+    private Instant passwordResetTokenExpiry;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int failedLoginAttempts = 0;
+
+    @Column
+    private Instant lockedUntil;
+
     public User() {
     }
     
@@ -126,5 +138,41 @@ public class User {
     public void incrementPasswordResetAttempts() {
         this.passwordResetCount++;
         this.lastPasswordResetTime = Instant.now();
+    }
+
+    public String getPasswordResetToken() {
+        return passwordResetToken;
+    }
+
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
+
+    public Instant getPasswordResetTokenExpiry() {
+        return passwordResetTokenExpiry;
+    }
+
+    public void setPasswordResetTokenExpiry(Instant passwordResetTokenExpiry) {
+        this.passwordResetTokenExpiry = passwordResetTokenExpiry;
+    }
+
+    public int getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(int failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    public Instant getLockedUntil() {
+        return lockedUntil;
+    }
+
+    public void setLockedUntil(Instant lockedUntil) {
+        this.lockedUntil = lockedUntil;
+    }
+
+    public boolean isLocked() {
+        return lockedUntil != null && Instant.now().isBefore(lockedUntil);
     }
 }

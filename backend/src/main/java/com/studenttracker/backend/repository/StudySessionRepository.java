@@ -12,4 +12,6 @@ public interface StudySessionRepository extends JpaRepository<StudySession, Long
 
     List<StudySession> findAllByUserAndCompletedAtBetweenOrderByCompletedAtDesc(
             User user, LocalDateTime from, LocalDateTime to);
+
+    void deleteByUser(User user);
 }

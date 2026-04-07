@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
-import { Pencil, Trash2, Plus, X, Check, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Pencil, Trash2, Plus, X, Check, Lock, AlertTriangle } from "lucide-react";
 import PasswordResetModal from "../components/profile/PasswordResetModal";
+import { useAuth } from "../auth/useAuth";
+import { deleteAccount } from "../services/authService";
 import {
   getAllSemesters,
   createSemester,
@@ -29,8 +32,13 @@ const EMPTY_EXAM_PERIOD_FORM = {
 };
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [semesters, setSemesters] = useState([]);
   const [examPeriods, setExamPeriods] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const [showSemesterForm, setShowSemesterForm] = useState(false);
   const [semesterForm, setSemesterForm] = useState(EMPTY_SEMESTER_FORM);
@@ -177,6 +185,19 @@ export default function ProfilePage() {
   const formatDate = (d) => {
     if (!d) return null;
     return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      await deleteAccount();
+      logout();
+      navigate("/");
+    } catch {
+      setDeleteError("Failed to delete account. Please try again.");
+      setDeleteLoading(false);
+    }
   };
 
   return (
@@ -478,6 +499,61 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* ── Danger Zone ── */}
+      <div style={{ ...s.section, borderColor: "rgba(239,68,68,0.3)" }}>
+        <div style={s.sectionHeader}>
+          <div>
+            <h2 style={{ ...s.sectionTitle, color: "#ef4444" }}>Danger Zone</h2>
+            <p style={s.sectionSubtitle}>Irreversible actions for your account</p>
+          </div>
+        </div>
+        <div style={s.securityInfo}>
+          <p style={s.securityText}>
+            Deleting your account will permanently remove all your data — subjects, tasks,
+            semesters, study sessions, and account information. This cannot be undone.
+          </p>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <button
+            style={s.deleteBtn}
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            <AlertTriangle size={15} />
+            Delete My Account
+          </button>
+        </div>
+      </div>
+
+      {/* ── Delete Account Confirmation Modal ── */}
+      {showDeleteConfirm && (
+        <div style={s.modalOverlay}>
+          <div style={s.modal}>
+            <h3 style={s.modalTitle}>Delete your account?</h3>
+            <p style={s.modalBody}>
+              This will permanently delete all your data and cannot be undone.
+              Are you absolutely sure?
+            </p>
+            {deleteError && <div style={s.errorMsg}>{deleteError}</div>}
+            <div style={s.modalActions}>
+              <button
+                style={s.cancelBtn}
+                onClick={() => { setShowDeleteConfirm(false); setDeleteError(""); }}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button
+                style={{ ...s.deleteBtn, opacity: deleteLoading ? 0.6 : 1 }}
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? "Deleting…" : "Yes, Delete Everything"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Password Reset Modal ── */}
       <PasswordResetModal
         isOpen={showPasswordResetModal}
@@ -740,5 +816,57 @@ const s = {
     margin: 0,
     lineHeight: "1.5",
     fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  deleteBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "7px",
+    padding: "8px 16px",
+    background: "rgba(239,68,68,0.1)",
+    color: "#ef4444",
+    border: "1px solid rgba(239,68,68,0.3)",
+    borderRadius: "var(--r-md)",
+    fontSize: "13px",
+    fontWeight: "500",
+    cursor: "pointer",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.6)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+    padding: "24px",
+  },
+  modal: {
+    background: "var(--surface)",
+    border: "1px solid rgba(239,68,68,0.3)",
+    borderRadius: "var(--r-lg)",
+    padding: "28px",
+    maxWidth: 420,
+    width: "100%",
+  },
+  modalTitle: {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#ef4444",
+    margin: "0 0 12px",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  modalBody: {
+    fontSize: "14px",
+    color: "var(--ink-3)",
+    margin: "0 0 20px",
+    lineHeight: "1.6",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  modalActions: {
+    display: "flex",
+    gap: "10px",
+    justifyContent: "flex-end",
+    marginTop: "8px",
   },
 };
