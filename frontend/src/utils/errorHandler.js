@@ -6,7 +6,7 @@
  */
 
 import { logError } from './logger';
-import { ERROR_MESSAGES, DEFAULT_ERROR_MESSAGE, USER_FRIENDLY_ERROR_KEYWORDS } from './errorMessages';
+import { ERROR_MESSAGES, DEFAULT_ERROR_MESSAGE } from './errorMessages';
 
 /**
  * Get a generic error message for the user
@@ -35,27 +35,14 @@ export const getUserFriendlyError = (error, context = 'Unknown') => {
     stack: error.stack,
   });
 
-  // Return generic message based on status code
-  if (statusCode && ERROR_MESSAGES[statusCode]) {
-    return ERROR_MESSAGES[statusCode];
+  // If the server sent a specific message, use it — the backend decides what's safe to show
+  if (errorData?.message) {
+    return String(errorData.message);
   }
 
-  // For specific error types (rate limiting, validation, etc.)
-  if (errorData?.message) {
-    // Still log it, but check if it's already a generic message
-    const message = String(errorData.message);
-
-    // Check if this is a user-friendly error message we can display
-    const isSafeToShow = USER_FRIENDLY_ERROR_KEYWORDS.some(keyword =>
-      message.toLowerCase().includes(keyword.toLowerCase())
-    );
-
-    if (isSafeToShow) {
-      return message;
-    }
-
-    // For other API-provided messages, use generic fallback
-    return DEFAULT_ERROR_MESSAGE;
+  // Fall back to generic status-code message
+  if (statusCode && ERROR_MESSAGES[statusCode]) {
+    return ERROR_MESSAGES[statusCode];
   }
 
   return DEFAULT_ERROR_MESSAGE;

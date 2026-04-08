@@ -39,13 +39,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException ex) {
         logger.warn("Unauthorized access: {}", ex.getMessage());
-        // Special case: rate limit errors can be shown to user (they're not security sensitive)
-        if (ex.getMessage().contains("Too many") || ex.getMessage().contains("rate")) {
+        // Hide the message only for actual credential failures — these must stay generic
+        // for security (don't reveal whether email or password was wrong)
+        String msg = ex.getMessage();
+        boolean isCredentialFailure = msg == null
+                || msg.equals("Invalid credentials")
+                || msg.equals("User not authenticated");
+        if (isCredentialFailure) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiError(401, ex.getMessage()));
+                    .body(new ApiError(401, "Authentication failed. Please try again."));
         }
+        // All other auth errors (validation, rate limiting, etc.) show the actual message
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ApiError(401, "Authentication failed. Please try again."));
+                .body(new ApiError(401, msg));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
