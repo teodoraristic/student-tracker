@@ -38,7 +38,7 @@ export default function Sidebar() {
         {navItems.map(({ path, label, icon: Icon }) => {
           const active = location.pathname === path;
           return (
-            <Link key={path} to={path} style={{ ...(active ? styles.navActive : styles.navItem) }}>
+            <Link key={path} to={path} style={{ ...styles.navItem, ...(active ? styles.navActive : {}) }}>
               <Icon size={16} color={active ? SALMON : "rgba(255,255,255,0.38)"} strokeWidth={active ? 2.2 : 1.8} />
               <span style={{ color: active ? WHITE : "rgba(255,255,255,0.45)" }}>{label}</span>
             </Link>
@@ -50,7 +50,7 @@ export default function Sidebar() {
       <div style={styles.bottom}>
         <Link
           to="/profile"
-          style={{ ...(location.pathname === "/profile" ? styles.userRowActive : styles.userRow) }}
+          style={{ ...styles.userRow, ...(location.pathname === "/profile" ? styles.userRowActive : {}) }}
         >
           <div style={styles.avatar}>
             <span style={styles.initials}>{initials}</span>
