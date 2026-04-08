@@ -438,21 +438,21 @@ export default function StudyRoomPage() {
               </div>
             ) : (
               <div style={s.historyList}>
-                {todaySessions.map((s) => (
-                  <div key={s.id} style={s.historyItem}>
+                {todaySessions.map((session) => (
+                  <div key={session.id} style={s.historyItem}>
                     <div style={s.historyDuration}>
-                      {fmtDuration(s.durationSeconds)}
+                      {fmtDuration(session.durationSeconds)}
                     </div>
                     <div style={s.historyMeta}>
-                      {s.subtaskTitle
-                        ? <span style={s.historyPrimary}>{s.subtaskTitle}</span>
+                      {session.subtaskTitle
+                        ? <span style={s.historyPrimary}>{session.subtaskTitle}</span>
                         : <span style={s.historyPrimary}>Free session</span>
                       }
-                      {s.subjectName && (
-                        <span style={s.historySecondary}>{s.subjectName}</span>
+                      {session.subjectName && (
+                        <span style={s.historySecondary}>{session.subjectName}</span>
                       )}
                     </div>
-                    <span style={s.historyTime}>{fmtTime(s.completedAt)}</span>
+                    <span style={s.historyTime}>{fmtTime(session.completedAt)}</span>
                   </div>
                 ))}
               </div>

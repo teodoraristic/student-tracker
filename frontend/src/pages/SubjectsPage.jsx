@@ -242,13 +242,13 @@ export default function SubjectsPage() {
           >
             All
           </button>
-          {semesters.map((s) => (
+          {semesters.map((sem) => (
             <button
-              key={s.id}
-              style={{ ...s.semesterTab, ...(activeSemesterId === s.id ? s.semesterTabActive : {}) }}
-              onClick={() => setActiveSemesterId(s.id)}
+              key={sem.id}
+              style={{ ...s.semesterTab, ...(activeSemesterId === sem.id ? s.semesterTabActive : {}) }}
+              onClick={() => setActiveSemesterId(sem.id)}
             >
-              {s.name}
+              {sem.name}
             </button>
           ))}
         </div>

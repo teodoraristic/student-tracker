@@ -343,36 +343,36 @@ export default function ProfilePage() {
         )}
 
         <div style={s.list}>
-          {semesters.map((s) => (
-            <div key={s.id} style={s.listItem}>
+          {semesters.map((sem) => (
+            <div key={sem.id} style={s.listItem}>
               <div style={s.listItemLeft}>
-                <div style={s.listItemName}>{s.name}</div>
+                <div style={s.listItemName}>{sem.name}</div>
                 <div style={s.listItemMeta}>
                   <span
                     style={{
                       ...s.typeBadge,
-                      background: s.type === "WINTER" ? "var(--color-future-bg)" : "var(--color-due-soon-bg)",
-                      color: s.type === "WINTER" ? "var(--color-future)" : "var(--color-due-soon)",
-                      border: `1px solid ${s.type === "WINTER" ? "var(--color-future)" : "var(--color-due-soon)"}`,
+                      background: sem.type === "WINTER" ? "var(--color-future-bg)" : "var(--color-due-soon-bg)",
+                      color: sem.type === "WINTER" ? "var(--color-future)" : "var(--color-due-soon)",
+                      border: `1px solid ${sem.type === "WINTER" ? "var(--color-future)" : "var(--color-due-soon)"}`,
                     }}
                   >
-                    {s.type}
+                    {sem.type}
                   </span>
-                  <span style={s.listItemYear}>{s.academicYear}</span>
-                  {(s.startDate || s.endDate) && (
+                  <span style={s.listItemYear}>{sem.academicYear}</span>
+                  {(sem.startDate || sem.endDate) && (
                     <span style={s.listItemDates}>
-                      {formatDate(s.startDate)} – {formatDate(s.endDate)}
+                      {formatDate(sem.startDate)} – {formatDate(sem.endDate)}
                     </span>
                   )}
                 </div>
               </div>
               <div style={s.listItemActions}>
-                <button style={s.iconBtn} onClick={() => handleEditSemester(s)} title="Edit">
+                <button style={s.iconBtn} onClick={() => handleEditSemester(sem)} title="Edit">
                   <Pencil size={15} />
                 </button>
                 <button
                   style={{ ...s.iconBtn, color: "var(--color-overdue)" }}
-                  onClick={() => handleDeleteSemester(s.id)}
+                  onClick={() => handleDeleteSemester(sem.id)}
                   title="Delete"
                 >
                   <Trash2 size={15} />
