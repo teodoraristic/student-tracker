@@ -35,3 +35,15 @@ export const refreshAccessToken = async (refreshToken) => {
   const response = await api.post("/auth/refresh", { refreshToken });
   return response.data; // { accessToken, refreshToken }
 };
+
+export const forgotPassword = async (email) => {
+  await api.post("/auth/forgot-password", { email });
+};
+
+export const resetPassword = async (token, newPassword, confirmPassword) => {
+  await api.post("/auth/reset-password", { token, newPassword, confirmPassword });
+};
+
+export const deleteAccount = async () => {
+  await api.delete("/auth/account");
+};

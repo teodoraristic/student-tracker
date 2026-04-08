@@ -74,17 +74,28 @@ export default function LoginPage() {
                             required
                         />
 
-                        <FormField
-                            label="Password"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            labelStyle={styles.fieldLabel}
-                            inputStyle={styles.fieldInput}
-                            errorStyle={styles.fieldError}
-                            required
-                        />
+                        <div>
+                            <FormField
+                                label="Password"
+                                type="password"
+                                placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                labelStyle={styles.fieldLabel}
+                                inputStyle={styles.fieldInput}
+                                errorStyle={styles.fieldError}
+                                required
+                            />
+                            <div style={{ textAlign: "right", marginTop: 6 }}>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/forgot-password")}
+                                    style={styles.forgotLink}
+                                >
+                                    Forgot password?
+                                </button>
+                            </div>
+                        </div>
 
                         {error && <p style={styles.errorMsg}>{error}</p>}
 
@@ -249,5 +260,16 @@ const styles = {
         fontSize: 13,
         padding: 0,
         fontFamily: "'DM Sans', system-ui, sans-serif",
+    },
+    forgotLink: {
+        color: "rgba(255,255,255,0.35)",
+        fontWeight: 400,
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        fontSize: 12,
+        padding: 0,
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+        textDecoration: "underline",
     },
 };

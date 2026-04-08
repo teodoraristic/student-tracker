@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface SemesterRepository extends JpaRepository<Semester, Long> {
     List<Semester> findAllByUser(User user);
+
+    void deleteAllByUser(User user);
 }
