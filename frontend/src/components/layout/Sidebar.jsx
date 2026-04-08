@@ -50,7 +50,7 @@ export default function Sidebar() {
       <div style={styles.bottom}>
         <Link
           to="/profile"
-          style={{ ...styles.userRowActive : {}) }}
+          style={{ ...(location.pathname === "/profile" ? styles.userRowActive : styles.userRow) }}
         >
           <div style={styles.avatar}>
             <span style={styles.initials}>{initials}</span>
