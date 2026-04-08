@@ -38,7 +38,7 @@ export default function Sidebar() {
         {navItems.map(({ path, label, icon: Icon }) => {
           const active = location.pathname === path;
           return (
-            <Link key={path} to={path} style={{ ...styles.navActive : {}) }}>
+            <Link key={path} to={path} style={{ ...(active ? styles.navActive : styles.navItem) }}>
               <Icon size={16} color={active ? SALMON : "rgba(255,255,255,0.38)"} strokeWidth={active ? 2.2 : 1.8} />
               <span style={{ color: active ? WHITE : "rgba(255,255,255,0.45)" }}>{label}</span>
             </Link>
